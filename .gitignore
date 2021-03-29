@@ -1,0 +1,8 @@
+.DS_Store
+dist/
+node_modules/
+DTCD-SDK/
+*-lock.*
+
+build/
+*.tar.gz
