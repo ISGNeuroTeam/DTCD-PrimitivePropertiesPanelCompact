@@ -38,8 +38,8 @@ export default {
         Object.values(event.args.properties).forEach(prop => {
           if (!prop.type) prop.type = this.options[0];
         });
-        this.primitiveProperties = event.args.properties;
-      } else this.primitiveProperties = null;
+      } else event.args.properties = {};
+      this.primitiveProperties = event.args.properties;
     });
   },
   methods: {
