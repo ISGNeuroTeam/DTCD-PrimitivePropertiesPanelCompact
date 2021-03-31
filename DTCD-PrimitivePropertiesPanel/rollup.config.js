@@ -31,7 +31,7 @@ const plugins = [
 
 export default {
   plugins,
-  input: `src/PrimitivePropertiesPanel.js`,
+  input: 'src/Plugin.js',
   output: {
     file: `${outputDirectory}/${outputFile}`,
     format: 'esm',
