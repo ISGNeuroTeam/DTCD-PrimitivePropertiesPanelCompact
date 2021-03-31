@@ -1,5 +1,5 @@
 import App from './App.vue';
-import { PanelPlugin, EventSystemAdapter } from './../../DTCD-SDK';
+import { PanelPlugin, EventSystemAdapter } from './../../DTCD-SDK/index';
 
 export class Plugin extends PanelPlugin {
   static getRegistrationMeta() {
@@ -7,6 +7,8 @@ export class Plugin extends PanelPlugin {
       type: 'panel',
       title: 'Панель свойств примитивов',
       name: 'PrimitivePropertiesPanel',
+      withDependencies:true,
+      version: "0.1.0"
     };
   }
 
