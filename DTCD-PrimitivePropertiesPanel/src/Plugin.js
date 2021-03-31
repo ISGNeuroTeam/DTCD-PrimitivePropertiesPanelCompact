@@ -1,25 +1,31 @@
 import pluginMeta from './Plugin.Meta';
 import PluginComponent from './PluginComponent.vue';
-import { PanelPlugin, EventSystemAdapter } from './../../DTCD-SDK/index';
+
+import {
+  PanelPlugin,
+  LogSystemAdapter,
+  EventSystemAdapter,
+} from './../../DTCD-SDK/index';
 
 export class Plugin extends PanelPlugin {
+
   static getRegistrationMeta() {
     return pluginMeta;
   }
 
-  constructor(guid, selector) {
+  constructor (guid, selector) {
     super();
-    let eventSystem = new EventSystemAdapter();
+
     const VueJS = this.getDependence('Vue');
+    const logSystem = new LogSystemAdapter();
+    const eventSystem = new EventSystemAdapter();
+
+    const data = { guid, logSystem, eventSystem };
 
     new VueJS.default({
+      data: () => data,
       render: h => h(PluginComponent),
-      data() {
-        return {
-          guid,
-          eventSystem,
-        };
-      },
     }).$mount(selector);
   }
+
 }
