@@ -4,10 +4,11 @@ import styles from 'rollup-plugin-styles';
 import replace from '@rollup/plugin-replace';
 
 import path from 'path';
+import pluginMeta from './src/Plugin.Meta';
 
 const watch = Boolean(process.env.ROLLUP_WATCH);
 
-const pluginName = 'PrimitivePropertiesPanel';
+const pluginName = pluginMeta.name;
 const outputFile = `${pluginName}.js`;
 const outputDirectory = watch ? `./../../DTCD/server/plugins/DTCD-${pluginName}` : `./build`;
 

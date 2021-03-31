@@ -1,15 +1,10 @@
+import pluginMeta from './Plugin.Meta';
 import App from './App.vue';
 import { PanelPlugin, EventSystemAdapter } from './../../DTCD-SDK/index';
 
 export class Plugin extends PanelPlugin {
   static getRegistrationMeta() {
-    return {
-      type: 'panel',
-      title: 'Панель свойств примитивов',
-      name: 'PrimitivePropertiesPanel',
-      withDependencies:true,
-      version: "0.1.0"
-    };
+    return pluginMeta;
   }
 
   constructor(guid, selector) {
