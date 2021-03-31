@@ -6,7 +6,7 @@
 import PrimitivePropertiesPanel from './components/PrimitivePropertiesPanel.vue';
 
 export default {
-  name: 'App',
+  name: 'PluginComponent',
   components: {
     PrimitivePropertiesPanel,
   },
