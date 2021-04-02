@@ -1,4 +1,4 @@
-# **CHANGELOG**
+# CHANGELOG
 
 All notable changes to this project will be documented in this file.
 
@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
+- LogSystem logging
 
 ### Changed
 
+- Vue components structure
 - edited Makefile
 
 ### Added
