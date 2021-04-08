@@ -36,17 +36,17 @@
               </div>
               <div class="prop-value">
                 <span
-                  v-if="propertyStutusList[propName] === 'complete'"
-                  :title="propertyCalculatedList[propName]"
-                  v-text="propertyCalculatedList[propName]"
+                  v-if="propertyCalculatedList[propName].status === 'complete'"
+                  :title="propertyCalculatedList[propName].value"
+                  v-text="propertyCalculatedList[propName].value"
                 />
                 <span v-else>
                   <StatusIcon
-                    v-if="propertyStutusList[propName] === 'error'"
+                    v-if="propertyCalculatedList[propName].status === 'error'"
                     :status="'error'"
                   />
                   <StatusIcon
-                    v-if="propertyStutusList[propName] === 'inProgress'"
+                    v-if="propertyCalculatedList[propName].status === 'inProgress'"
                     :status="'inProgress'"
                   />
                 </span>
@@ -175,18 +175,17 @@ export default {
         return;
       }
 
-      const { nodeID = '', nodeTitle = '', properties = {}, calculated = {}, statuses = {} } = primitive;
+      const { nodeID = '', nodeTitle = '', properties = {}, calculated = {}} = primitive;
 
-      for (const prop in properties) {
+      for (let prop in properties) {
         if (!properties[prop].type) properties[prop].type = 'expression';
-        if (!calculated[prop]) calculated[prop] = '';
-        if (!statuses[prop]) statuses[prop] = 'complete';
+        if (!calculated[prop]) calculated[prop] = {value:""};
+        if (!calculated[prop].value) calculated[prop].value = "";
       }
 
       this.nodeID = nodeID;
       this.nodeTitle = nodeTitle;
       this.propertyList = properties;
-      this.propertyStutusList = statuses;
       this.propertyCalculatedList = calculated;
       this.newPropsCount = 1;
       this.addedPropertiesList = {};
@@ -231,8 +230,8 @@ export default {
         this.logSystem.debug(`Adding property ${name} from ${this.nodeID} node`);
         this.logSystem.info(`Adding property ${name} from ${this.nodeID} node`);
 
-        this.propertyStutusList[name] = status;
-        this.propertyCalculatedList[name] = '';
+        this.propertyCalculatedList[name].status = status
+        this.propertyCalculatedList[name].value = '';
         await this.$delete(this.addedPropertiesList, propName);
       }
     },
