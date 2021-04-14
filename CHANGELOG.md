@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - withDependencies flag in meta
 - version in meta
 - dependencies directory
+- processing properties of primitives into graphs 
 
 ## [0.1.0]
 
