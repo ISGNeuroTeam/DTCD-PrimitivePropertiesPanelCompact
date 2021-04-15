@@ -16,7 +16,7 @@ export class Plugin extends PanelPlugin {
   constructor (guid, selector) {
     super();
 
-    const logSystem = new LogSystemAdapter();
+    const logSystem = new LogSystemAdapter(guid, pluginMeta.name);
     logSystem.info(`Start instantiation of ${pluginMeta.name} plugin`);
     logSystem.debug(`Create LogSystemAdapter instance in ${pluginMeta.name} plugin`);
 
