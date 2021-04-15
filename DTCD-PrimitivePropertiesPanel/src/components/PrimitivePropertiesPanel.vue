@@ -5,8 +5,20 @@
 
       <div class="panel-header">
         <div class="primitive-info">
-          <span class="node-id" v-text="nodeID"/>
-          <span class="node-title" v-text="nodeTitle"/>
+          <input
+            readonly
+            type="text"
+            tabindex="-1"
+            class="node-id"
+            :value="nodeID"
+          >
+          <input
+            readonly
+            type="text"
+            tabindex="-1"
+            class="node-title"
+            :value="nodeTitle"
+          >
         </div>
         <div
           class="btn add-prop-btn"
@@ -354,6 +366,12 @@ $c-green: #4CAF50;
       display: flex;
       flex-direction: column;
       flex: 1 0;
+
+      > input {
+        border: none;
+        outline: none;
+        padding-right: 20px;
+      }
 
       .node-id {
         font-size: 15px;
