@@ -27,6 +27,7 @@
           <div class="card-header">
             <div class="prop-info">
               <div class="prop-name">
+                <!-- For scroll property name -->
                 <input
                   readonly
                   tabindex="-1"
@@ -36,17 +37,17 @@
               </div>
               <div class="prop-value">
                 <span
-                  v-if="propertyStutusList[propName] === 'complete'"
-                  :title="propertyCalculatedList[propName]"
-                  v-text="propertyCalculatedList[propName]"
+                  v-if="prop.status === 'complete'"
+                  :title="prop.value"
+                  v-text="prop.value"
                 />
                 <span v-else>
                   <StatusIcon
-                    v-if="propertyStutusList[propName] === 'error'"
+                    v-if="prop.status === 'error'"
                     :status="'error'"
                   />
                   <StatusIcon
-                    v-if="propertyStutusList[propName] === 'inProgress'"
+                    v-if="prop.status === 'inProgress'"
                     :status="'inProgress'"
                   />
                 </span>
@@ -70,7 +71,7 @@
               />
             </select>
             <textarea
-              v-model="prop.value"
+              v-model="prop.expression"
               rows="1"
               class="prop-expression"
               placeholder="Enter expression"
@@ -129,7 +130,7 @@
               class="prop-expression"
               placeholder="Enter expression"
               rows="1"
-              v-model="addedPropertiesList[propName].value"
+              v-model="addedPropertiesList[propName].expression"
             />
           </div>
         </div>
@@ -153,8 +154,7 @@ export default {
     nodeID: '',
     nodeTitle: '',
     propertyList: {},
-    propertyStutusList: {},
-    propertyCalculatedList: {},
+    propertyStatusList: {},
     propertyTypes: ['expression', 'OTL'],
     newPropsCount: 1,
     addedPropertiesList: {},
@@ -168,6 +168,7 @@ export default {
   methods: {
     processPrimitiveEvent (event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
+
       let { name: eventName, args: primitive = {} } = event;
 
       if (eventName !== 'BroadcastPrimitiveInfo') {
@@ -175,19 +176,16 @@ export default {
         return;
       }
 
-      const { nodeID = '', nodeTitle = '', properties = {}, calculated = {}, statuses = {} } = primitive;
+      const { nodeID = '', nodeTitle = '', properties = {}} = primitive;
 
-      for (const prop in properties) {
+      for (let prop in properties) {
         if (!properties[prop].type) properties[prop].type = 'expression';
-        if (!calculated[prop]) calculated[prop] = '';
-        if (!statuses[prop]) statuses[prop] = 'complete';
+        if (!properties[prop].expression) properties[prop].expression = '';
       }
 
       this.nodeID = nodeID;
       this.nodeTitle = nodeTitle;
       this.propertyList = properties;
-      this.propertyStutusList = statuses;
-      this.propertyCalculatedList = calculated;
       this.newPropsCount = 1;
       this.addedPropertiesList = {};
 
@@ -212,7 +210,8 @@ export default {
         name: '',
         value: '',
         type:'expression',
-        status: 'complete',
+        status: 'inProgress',
+        expression:""
       };
       this.$set(this.addedPropertiesList, propName, property);
       this.$nextTick(() => this.$refs[propName][0].focus());
@@ -221,18 +220,16 @@ export default {
     },
 
     async addPropertyToPrimitive (propName) {
-      const { name, type, status, value } = this.addedPropertiesList[propName];
+      const { name, type, status, value, expression } = this.addedPropertiesList[propName];
       const existedProperties = Object
         .keys(this.propertyList)
         .map(key => key.toLocaleLowerCase());
 
       if (!existedProperties.includes(name.toLocaleLowerCase())) {
-        await this.$set(this.propertyList, name, { value, type });
+        await this.$set(this.propertyList, name, { value, type,status, expression });
         this.logSystem.debug(`Adding property ${name} from ${this.nodeID} node`);
         this.logSystem.info(`Adding property ${name} from ${this.nodeID} node`);
 
-        this.propertyStutusList[name] = status;
-        this.propertyCalculatedList[name] = '';
         await this.$delete(this.addedPropertiesList, propName);
       }
     },
