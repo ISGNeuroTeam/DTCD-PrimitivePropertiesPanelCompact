@@ -204,6 +204,14 @@ export default {
       this.logSystem.debug(`End of propcessing event BroadcastPrimitiveInfo`);
     },
 
+    processLivedashPrimitiveDeleteEvent () {
+      this.nodeID = '';
+      this.nodeTitle = '';
+      this.newPropsCount = 1;
+      this.propertyList = {};
+      this.addedPropertiesList = {};
+    },
+
     deleteProperty (propName) {
       this.$delete(this.propertyList, propName);
       this.logSystem.debug(`Deleting property ${propName} from ${this.nodeID} node`);
