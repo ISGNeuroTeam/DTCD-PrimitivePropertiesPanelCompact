@@ -173,9 +173,13 @@ export default {
   }),
   mounted () {
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
-    this.eventSystem.subscribeEventNameByCallback(
-      'BroadcastPrimitiveInfo', event => this.processPrimitiveEvent(event)
-    );
+
+    let customAction;
+    customAction = this.eventSystem.createActionByCallback("showPropertiesInPanel", this.guid, this.processPrimitiveEvent.bind(this))
+    this.eventSystem.subscribe("BroadcastPrimitiveInfo", customAction.id)
+    
+    customAction = this.eventSystem.createActionByCallback("clearPropertiesPanelByDelete", this.guid, this.processLivedashPrimitiveDeleteEvent.bind(this))
+    this.eventSystem.subscribe("DeleteLiveDashItem", customAction.id)
   },
   methods: {
     processPrimitiveEvent (event = {}) {
@@ -204,12 +208,18 @@ export default {
       this.logSystem.debug(`End of propcessing event BroadcastPrimitiveInfo`);
     },
 
-    processLivedashPrimitiveDeleteEvent () {
-      this.nodeID = '';
-      this.nodeTitle = '';
-      this.newPropsCount = 1;
-      this.propertyList = {};
-      this.addedPropertiesList = {};
+    processLivedashPrimitiveDeleteEvent (event={}) {
+      let { args } = event;
+      // Check if label by nextline
+      if(args.text)this.nodeTitle=""
+
+      if(args.tag && ( args.tag.nodeID === this.nodeID ) ){
+        this.nodeID = '';
+        this.nodeTitle = '';
+        this.newPropsCount = 1;
+        this.propertyList = {};
+        this.addedPropertiesList = {};
+      }
     },
 
     deleteProperty (propName) {
