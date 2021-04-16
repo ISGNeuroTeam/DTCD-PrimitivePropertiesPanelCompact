@@ -209,7 +209,9 @@ export default {
     },
 
     processLivedashPrimitiveDeleteEvent (event={}) {
-      let { args: primitive } = event;
+      let { args } = event;
+      // Check if label by nextline
+      if(args.text)this.nodeTitle=""
 
       if(args.tag && ( args.tag.nodeID === this.nodeID ) ){
         this.nodeID = '';
