@@ -1,6 +1,6 @@
 <template>
   <transition name="fade" mode="out-in">
-    <NoPrimitiveSelected v-if="!nodeID"/>
+    <NoPrimitiveSelected v-if="!primitiveID"/>
     <div v-else class="panel-content">
 
       <div class="panel-header">
@@ -10,7 +10,7 @@
             type="text"
             tabindex="-1"
             class="node-id"
-            :value="nodeID"
+            :value="primitiveID"
           >
           <input
             readonly
@@ -163,7 +163,7 @@ export default {
     guid: $root.guid,
     logSystem: $root.logSystem,
     eventSystem: $root.eventSystem,
-    nodeID: '',
+    primitiveID: '',
     nodeTitle: '',
     propertyList: {},
     propertyStatusList: {},
@@ -192,14 +192,14 @@ export default {
         return;
       }
 
-      const { nodeID = '', nodeTitle = '', properties = {}} = primitive;
+      const { primitiveID = '', nodeTitle = '', properties = {}} = primitive;
 
       for (let prop in properties) {
         if (!properties[prop].type) properties[prop].type = 'expression';
         if (!properties[prop].expression) properties[prop].expression = '';
       }
 
-      this.nodeID = nodeID;
+      this.primitiveID = primitiveID;
       this.nodeTitle = nodeTitle;
       this.propertyList = properties;
       this.newPropsCount = 1;
@@ -213,8 +213,8 @@ export default {
       // Check if label by nextline
       if(args.text)this.nodeTitle=""
 
-      if(args.tag && ( args.tag.nodeID === this.nodeID ) ){
-        this.nodeID = '';
+      if(args.tag && ( args.tag.primitiveID === this.primitiveID ) ){
+        this.primitiveID = '';
         this.nodeTitle = '';
         this.newPropsCount = 1;
         this.propertyList = {};
@@ -224,14 +224,14 @@ export default {
 
     deleteProperty (propName) {
       this.$delete(this.propertyList, propName);
-      this.logSystem.debug(`Deleting property ${propName} from ${this.nodeID} node`);
-      this.logSystem.info(`Deleting property ${propName} from ${this.nodeID} node`);
+      this.logSystem.debug(`Deleting property ${propName} from ${this.primitiveID} node`);
+      this.logSystem.info(`Deleting property ${propName} from ${this.primitiveID} node`);
     },
 
     deleteAddedProperty (propName) {
       this.$delete(this.addedPropertiesList, propName);
-      this.logSystem.debug(`Сancel adding a new property to ${this.nodeID} node`);
-      this.logSystem.info(`Сancel adding a new property to ${this.nodeID} node`);
+      this.logSystem.debug(`Сancel adding a new property to ${this.primitiveID} node`);
+      this.logSystem.info(`Сancel adding a new property to ${this.primitiveID} node`);
     },
 
     addNewPropertyForm () {
@@ -257,8 +257,8 @@ export default {
 
       if (!existedProperties.includes(name.toLocaleLowerCase())) {
         await this.$set(this.propertyList, name, { value, type,status, expression });
-        this.logSystem.debug(`Adding property ${name} from ${this.nodeID} node`);
-        this.logSystem.info(`Adding property ${name} from ${this.nodeID} node`);
+        this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
+        this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
 
         await this.$delete(this.addedPropertiesList, propName);
       }
