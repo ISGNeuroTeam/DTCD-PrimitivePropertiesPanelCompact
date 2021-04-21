@@ -155,9 +155,9 @@ export default {
   methods: {
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
-      let { name: eventName, args: primitive = {} } = event;
-      this.portList = primitive.ports;
-      console.log(this.portList);
+      const { name: eventName } = event;
+      let { primitiveTag: primitive = {}, ports } = event.args;
+      this.portList = ports;
 
       if (eventName !== 'BroadcastPrimitiveInfo') {
         this.logSystem.error('Expected BroadcastPrimitiveInfo event');
