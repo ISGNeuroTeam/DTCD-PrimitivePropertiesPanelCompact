@@ -1,101 +1,46 @@
 <template>
   <transition name="fade" mode="out-in">
-    <NoPrimitiveSelected v-if="!primitiveID"/>
+    <NoPrimitiveSelected v-if="!primitiveID" />
     <div v-else class="panel-content">
-
       <div class="panel-header">
         <div class="primitive-info">
-          <input
-            readonly
-            type="text"
-            tabindex="-1"
-            class="node-id"
-            :value="primitiveID"
-          >
-          <input
-            readonly
-            type="text"
-            tabindex="-1"
-            class="node-title"
-            :value="nodeTitle"
-          >
+          <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
+          <input readonly type="text" tabindex="-1" class="node-title" :value="nodeTitle" />
         </div>
-        <div
-          class="btn add-prop-btn"
-          title="Add property"
-          @click="addNewPropertyForm"
-        >
-          <i class="fas fa-plus icon"/>
+        <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
+          <i class="fas fa-plus icon" />
         </div>
       </div>
 
       <div class="property-list" ref="propertyList">
-
-        <div
-          v-for="(prop, propName) in propertyList"
-          :key="propName"
-          class="property-card"
-        >
+        <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
           <div class="card-header">
             <div class="prop-info">
               <div class="prop-name">
                 <!-- For scroll property name -->
-                <input
-                  readonly
-                  tabindex="-1"
-                  type="text"
-                  :value="propName"
-                >
+                <input readonly tabindex="-1" type="text" :value="propName" />
               </div>
               <div class="prop-value">
-                <span
-                  v-if="prop.status === 'complete'"
-                  :title="prop.value"
-                  v-text="prop.value"
-                />
+                <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
                 <span v-else>
-                  <StatusIcon
-                    v-if="prop.status === 'error'"
-                    :status="'error'"
-                  />
-                  <StatusIcon
-                    v-if="prop.status === 'inProgress'"
-                    :status="'inProgress'"
-                  />
+                  <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
+                  <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
                 </span>
               </div>
             </div>
-            <div
-              class="btn delete-prop-btn"
-              title="Delete property"
-              @click="deleteProperty(propName)"
-            >
-              <i class="far fa-trash-alt icon"/>
+            <div class="btn delete-prop-btn" title="Delete property" @click="deleteProperty(propName)">
+              <i class="far fa-trash-alt icon" />
             </div>
           </div>
           <div class="card-content">
             <select class="prop-type" v-model="prop.type">
-              <option
-                v-for="option in propertyTypes"
-                :key="option"
-                :value="option"
-                v-text="option.toUpperCase()"
-              />
+              <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
             </select>
-            <textarea
-              v-model="prop.expression"
-              rows="1"
-              class="prop-expression"
-              placeholder="Enter expression"
-            />
+            <textarea v-model="prop.expression" rows="1" class="prop-expression" placeholder="Enter expression" />
           </div>
         </div>
 
-        <div
-          v-for="(prop, propName) in addedPropertiesList"
-          :key="propName"
-          class="property-card"
-        >
+        <div v-for="(prop, propName) in addedPropertiesList" :key="propName" class="property-card">
           <div class="card-header">
             <div class="prop-info">
               <div class="prop-name">
@@ -105,7 +50,7 @@
                   class="editable"
                   type="text"
                   placeholder="Enter name..."
-                >
+                />
               </div>
               <div class="prop-value">
                 <div
@@ -114,29 +59,17 @@
                   title="Add property"
                   @click="addPropertyToPrimitive(propName)"
                 >
-                  <i class="fas fa-check icon"/>
+                  <i class="fas fa-check icon" />
                 </div>
               </div>
             </div>
-            <div
-              class="btn delete-prop-btn"
-              title="Delete property"
-              @click="deleteAddedProperty(propName)"
-            >
-              <i class="far fa-trash-alt icon"/>
+            <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedProperty(propName)">
+              <i class="far fa-trash-alt icon" />
             </div>
           </div>
           <div class="card-content">
-            <select
-              class="prop-type"
-              v-model="addedPropertiesList[propName].type"
-            >
-              <option
-                v-for="option in propertyTypes"
-                :key="option"
-                :value="option"
-                v-text="option.toUpperCase()"
-              />
+            <select class="prop-type" v-model="addedPropertiesList[propName].type">
+              <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
             </select>
             <textarea
               class="prop-expression"
@@ -146,7 +79,36 @@
             />
           </div>
         </div>
-
+        <p>Ports:</p>
+        <div v-for="port in portList" :key="port" class="property-card">
+          <div class="card-header">
+            <div class="prop-info">
+              <div class="prop-name">
+                <!-- For scroll property name -->
+                <input readonly tabindex="-1" type="text" :value="port.primitiveName" />
+              </div>
+              <div class="prop-value">
+                <span
+                  v-if="port.properties.status.status === 'complete'"
+                  :title="port.properties.status.value"
+                  v-text="port.properties.status.value"
+                />
+                <span v-else>
+                  <StatusIcon v-if="port.properties.status.status === 'error'" :status="'error'" />
+                  <StatusIcon v-if="port.properties.status.status === 'inProgress'" :status="'inProgress'" />
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-content">
+            <textarea
+              v-model="port.properties.status.expression"
+              rows="1"
+              class="prop-expression"
+              placeholder="Enter expression"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </transition>
@@ -170,29 +132,39 @@ export default {
     propertyTypes: ['expression', 'OTL'],
     newPropsCount: 1,
     addedPropertiesList: {},
+    portList: [],
   }),
-  mounted () {
+  mounted() {
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
 
     let customAction;
-    customAction = this.eventSystem.createActionByCallback("showPropertiesInPanel", this.guid, this.processPrimitiveEvent.bind(this))
-    this.eventSystem.subscribe("BroadcastPrimitiveInfo", customAction.id)
-    
-    customAction = this.eventSystem.createActionByCallback("clearPropertiesPanelByDelete", this.guid, this.processLivedashPrimitiveDeleteEvent.bind(this))
-    this.eventSystem.subscribe("DeleteLiveDashItem", customAction.id)
+    customAction = this.eventSystem.createActionByCallback(
+      'showPropertiesInPanel',
+      this.guid,
+      this.processPrimitiveEvent.bind(this)
+    );
+    this.eventSystem.subscribe('BroadcastPrimitiveInfo', customAction.id);
+
+    customAction = this.eventSystem.createActionByCallback(
+      'clearPropertiesPanelByDelete',
+      this.guid,
+      this.processLivedashPrimitiveDeleteEvent.bind(this)
+    );
+    this.eventSystem.subscribe('DeleteLiveDashItem', customAction.id);
   },
   methods: {
-    processPrimitiveEvent (event = {}) {
+    processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
-
       let { name: eventName, args: primitive = {} } = event;
+      this.portList = primitive.ports;
+      console.log(this.portList);
 
       if (eventName !== 'BroadcastPrimitiveInfo') {
         this.logSystem.error('Expected BroadcastPrimitiveInfo event');
         return;
       }
 
-      const { primitiveID = '', nodeTitle = '', properties = {}} = primitive;
+      const { primitiveID = '', nodeTitle = '', properties = {} } = primitive;
 
       for (let prop in properties) {
         if (!properties[prop].type) properties[prop].type = 'expression';
@@ -208,12 +180,12 @@ export default {
       this.logSystem.debug(`End of propcessing event BroadcastPrimitiveInfo`);
     },
 
-    processLivedashPrimitiveDeleteEvent (event={}) {
+    processLivedashPrimitiveDeleteEvent(event = {}) {
       let { args } = event;
       // Check if label by nextline
-      if(args.text)this.nodeTitle=""
+      if (args.text) this.nodeTitle = '';
 
-      if(args.tag && ( args.tag.primitiveID === this.primitiveID ) ){
+      if (args.tag && args.tag.primitiveID === this.primitiveID) {
         this.primitiveID = '';
         this.nodeTitle = '';
         this.newPropsCount = 1;
@@ -222,26 +194,26 @@ export default {
       }
     },
 
-    deleteProperty (propName) {
+    deleteProperty(propName) {
       this.$delete(this.propertyList, propName);
       this.logSystem.debug(`Deleting property ${propName} from ${this.primitiveID} node`);
       this.logSystem.info(`Deleting property ${propName} from ${this.primitiveID} node`);
     },
 
-    deleteAddedProperty (propName) {
+    deleteAddedProperty(propName) {
       this.$delete(this.addedPropertiesList, propName);
       this.logSystem.debug(`Сancel adding a new property to ${this.primitiveID} node`);
       this.logSystem.info(`Сancel adding a new property to ${this.primitiveID} node`);
     },
 
-    addNewPropertyForm () {
+    addNewPropertyForm() {
       const propName = `prop${this.newPropsCount}`;
       const property = {
         name: '',
         value: '',
-        type:'expression',
+        type: 'expression',
         status: 'inProgress',
-        expression:""
+        expression: '',
       };
       this.$set(this.addedPropertiesList, propName, property);
       this.$nextTick(() => this.$refs[propName][0].focus());
@@ -249,14 +221,12 @@ export default {
       this.newPropsCount += 1;
     },
 
-    async addPropertyToPrimitive (propName) {
+    async addPropertyToPrimitive(propName) {
       const { name, type, status, value, expression } = this.addedPropertiesList[propName];
-      const existedProperties = Object
-        .keys(this.propertyList)
-        .map(key => key.toLocaleLowerCase());
+      const existedProperties = Object.keys(this.propertyList).map(key => key.toLocaleLowerCase());
 
       if (!existedProperties.includes(name.toLocaleLowerCase())) {
-        await this.$set(this.propertyList, name, { value, type,status, expression });
+        await this.$set(this.propertyList, name, { value, type, status, expression });
         this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
         this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
 
@@ -264,7 +234,7 @@ export default {
       }
     },
 
-    scrollPropertyListDown () {
+    scrollPropertyListDown() {
       this.$nextTick(() => {
         const container = this.$refs.propertyList;
         container.scrollTop = container.scrollHeight;
@@ -279,9 +249,9 @@ export default {
 @import './../styles/base';
 
 $panel-header-height: 60px;
-$c-blue: #2196F3;
-$c-red: #EF5350;
-$c-green: #4CAF50;
+$c-blue: #2196f3;
+$c-red: #ef5350;
+$c-green: #4caf50;
 
 .panel-content {
   display: flex;
@@ -373,8 +343,7 @@ $c-green: #4CAF50;
     width: 100%;
     height: $panel-header-height;
     background-color: #fff;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, .1),
-                0 2px 4px rgba(0, 0, 0, .25);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.25);
     padding: 0 20px;
     position: absolute;
     top: 0;
