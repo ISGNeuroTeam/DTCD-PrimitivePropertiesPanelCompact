@@ -97,3 +97,4 @@ sdk:
 
 dev: build
 	cp -rf ./build/$(PROJECT_NAME) ./../DTCD/server/plugins
+	npm run dev --prefix ./$(PROJECT_NAME)
