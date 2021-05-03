@@ -2,6 +2,7 @@
   <transition name="fade" mode="out-in">
     <NoPrimitiveSelected v-if="!primitiveID" />
     <div v-else class="panel-content">
+      <OTLModalWindow v-if="isModalVisible" @close="closeModal" @savedOTL="handleOTL" :otlData="tempValue" />
       <div class="panel-header">
         <div class="primitive-info">
           <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
@@ -36,7 +37,16 @@
             <select class="prop-type" v-model="prop.type">
               <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
             </select>
-            <textarea v-model="prop.expression" rows="1" class="prop-expression" placeholder="Enter expression" />
+            <button v-if="prop.type === 'OTL'" type="button" class="otl-button" @click="showModal(prop)">
+              Edit OTL
+            </button>
+            <textarea
+              v-else
+              v-model="prop.expression"
+              rows="1"
+              class="prop-expression"
+              placeholder="Enter expression"
+            />
           </div>
         </div>
 
@@ -117,10 +127,11 @@
 <script>
 import NoPrimitiveSelected from './NoPrimitiveSelected.vue';
 import StatusIcon from './StatusIcon.vue';
+import OTLModalWindow from '@/components/OTLModalWindow.vue';
 
 export default {
   name: 'PrimitivePropertiesPanel',
-  components: { NoPrimitiveSelected, StatusIcon },
+  components: { NoPrimitiveSelected, StatusIcon, OTLModalWindow },
   data: ({ $root }) => ({
     guid: $root.guid,
     logSystem: $root.logSystem,
@@ -133,6 +144,14 @@ export default {
     newPropsCount: 1,
     addedPropertiesList: {},
     portList: [],
+    isModalVisible: false,
+    tempValue: {
+      otl: '',
+      from: null,
+      to: null,
+      ttl: null,
+    },
+    editableOTL: null,
   }),
   mounted() {
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
@@ -153,6 +172,23 @@ export default {
     this.eventSystem.subscribe('DeleteLiveDashItem', customAction.id);
   },
   methods: {
+    showModal(prop) {
+      if (typeof prop.expression !== 'string') {
+        this.tempValue = prop.expression;
+      } else {
+        this.tempValue = {
+          otl: '',
+          from: null,
+          to: null,
+          ttl: null,
+        };
+      }
+      this.editableOTL = prop;
+      this.isModalVisible = true;
+    },
+    closeModal() {
+      this.isModalVisible = false;
+    },
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
       const { name: eventName } = event;
@@ -241,12 +277,17 @@ export default {
         this.logSystem.debug(`Scrolling properties container down`);
       });
     },
+    handleOTL(otlRequestData) {
+      this.editableOTL.expression = otlRequestData;
+      this.editableOTL = null;
+      console.log(this.propertyList);
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-@import './../styles/base';
+@import './../styles/base.scss';
 
 $panel-header-height: 60px;
 $c-blue: #2196f3;
@@ -434,6 +475,10 @@ $c-green: #4caf50;
           display: block;
           height: $select-height;
           outline: none;
+        }
+        .otl-button {
+          min-width: 100px;
+          margin-left: 20px;
         }
 
         .prop-expression {
