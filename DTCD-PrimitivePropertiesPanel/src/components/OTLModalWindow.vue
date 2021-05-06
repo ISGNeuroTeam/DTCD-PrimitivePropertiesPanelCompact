@@ -12,19 +12,19 @@
             <div class="label-wrapper">
               <label>TTL</label>
             </div>
-            <input id="ttl" type="number" class="input" v-model="tempValue.ttl" />
+            <input id="ttl" type="number" class="input" v-model="tempValue.cacheTime" />
           </div>
           <div class="form-field">
             <div class="label-wrapper">
               <label>From</label>
             </div>
-            <input id="datetime" type="datetime-local" class="input" v-model="tempValue.from" />
+            <input ref="datetimeFrom" type="datetime-local" class="input" v-model="tempValue.tws" />
           </div>
           <div class="form-field">
             <div class="label-wrapper">
               <label>To</label>
             </div>
-            <input id="datetime" type="datetime-local" class="input" v-model="tempValue.to" />
+            <input ref="datetimeTo" type="datetime-local" class="input" v-model="tempValue.twf" />
           </div>
           <div class="form-field">
             <div class="label-wrapper">
@@ -34,7 +34,7 @@
               <textarea
                 name="text"
                 id="text"
-                v-model="tempValue.otl"
+                v-model="tempValue.search"
                 onInput="this.parentNode.dataset.replicatedValue = this.value"
               ></textarea>
             </div>
@@ -59,15 +59,26 @@ export default {
   data() {
     return {
       tempValue: {
-        otl: '',
-        from: null,
-        to: null,
-        ttl: null,
+        type:"OTL",
+        search: '',
+        tws: null,
+        twf: null,
+        cacheTime: null,
       },
     };
   },
   mounted() {
-    this.tempValue = { ...this.otlData };
+    let {cacheTime=100, search, tws, twf} = this.otlData;
+    // transform ISO date into Locale Russia (+3 hour)
+    [tws, twf] = [new Date(tws), new Date(twf)].map(date=>date.setHours(date.getHours()+3)*1000)
+
+    this.tempValue = {
+      type:"OTL", 
+      tws:new Date(tws).toISOString().substr(0,16), 
+      twf:new Date(twf).toISOString().substr(0,16), 
+      search, 
+      cacheTime
+    }
   },
   methods: {
     close() {
@@ -75,21 +86,19 @@ export default {
       this.clearTempValue();
     },
     save() {
-      const requestData = {
-        from: this.tempValue.from,
-        to: this.tempValue.to,
-        ttl: this.tempValue.ttl,
-        otl: this.tempValue.otl.trim(),
-      };
-      this.$emit('savedOTL', requestData);
+      this.tempValue.search.trim()
+      this.tempValue.tws = Date.parse(this.tempValue.tws)/1000
+      this.tempValue.twf = Date.parse(this.tempValue.twf)/1000
+      this.$emit('savedOTL', this.tempValue);
       this.close();
     },
     clearTempValue() {
       this.tempValue = {
-        otl: '',
-        from: null,
-        to: null,
-        ttl: null,
+        type:"OTL",
+        search: '',
+        tws: null,
+        twf: null,
+        cacheTime: null,
       };
     },
   },

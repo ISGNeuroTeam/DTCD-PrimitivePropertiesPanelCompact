@@ -35,10 +35,15 @@
           </div>
           <div class="card-content">
             <select class="prop-type" v-model="prop.type">
-              <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
+              <option 
+              v-for="option in propertyTypes" 
+              :value="$root.dataSourceSystem.dataSourceTypes.includes(option)?'datasource':option" 
+              :key="option" 
+              v-text="option.toUpperCase()" 
+              />
             </select>
-            <button v-if="prop.type === 'OTL'" type="button" class="otl-button" @click="showModal(prop)">
-              Edit OTL
+            <button v-if="prop.type === 'datasource'" type="button" class="otl-button" @click="showModal(prop)">
+              Edit {{prop.expression.type}}
             </button>
             <textarea
               v-else
@@ -140,20 +145,23 @@ export default {
     nodeTitle: '',
     propertyList: {},
     propertyStatusList: {},
-    propertyTypes: ['expression', 'OTL'],
+    propertyTypes: ['expression'],
     newPropsCount: 1,
     addedPropertiesList: {},
     portList: [],
     isModalVisible: false,
     tempValue: {
-      otl: '',
-      from: null,
-      to: null,
-      ttl: null,
+      search: '',
+      tws: null,
+      twf: null,
+      cacheTime: null,
     },
     editableOTL: null,
   }),
   mounted() {
+    this.propertyTypes.push(...this.$root.dataSourceSystem.dataSourceTypes)
+    this.logSystem.debug('Set types of DataSourceSystem');
+
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
 
     let customAction;
@@ -177,11 +185,11 @@ export default {
         this.tempValue = prop.expression;
       } else {
         this.tempValue = {
-          otl: '',
-          from: null,
-          to: null,
-          ttl: null,
-        };
+          search: '',
+          tws: null,
+          twf: null,
+          cacheTime: null,
+        }
       }
       this.editableOTL = prop;
       this.isModalVisible = true;
@@ -280,7 +288,6 @@ export default {
     handleOTL(otlRequestData) {
       this.editableOTL.expression = otlRequestData;
       this.editableOTL = null;
-      console.log(this.propertyList);
     },
   },
 };
