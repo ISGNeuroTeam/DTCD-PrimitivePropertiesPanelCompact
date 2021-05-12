@@ -5,15 +5,15 @@ import {
   PanelPlugin,
   LogSystemAdapter,
   EventSystemAdapter,
+  DataSourceSystemAdapter,
 } from './../../DTCD-SDK/index';
 
 export class Plugin extends PanelPlugin {
-
   static getRegistrationMeta() {
     return pluginMeta;
   }
 
-  constructor (guid, selector) {
+  constructor(guid, selector) {
     super();
 
     const logSystem = new LogSystemAdapter(guid, pluginMeta.name);
@@ -26,7 +26,10 @@ export class Plugin extends PanelPlugin {
     const eventSystem = new EventSystemAdapter();
     logSystem.debug(`Create EventSystemAdapter instance in ${pluginMeta.name} plugin`);
 
-    const data = { guid, logSystem, eventSystem };
+    const dataSourceSystem = new DataSourceSystemAdapter();
+    logSystem.debug(`Create DataSourceSystemAdapter instance in ${pluginMeta.name} plugin`);
+
+    const data = {guid, logSystem, eventSystem, dataSourceSystem};
 
     logSystem.debug(`Creating Vue instance in ${pluginMeta.name} plugin`);
     new VueJS.default({
@@ -36,5 +39,4 @@ export class Plugin extends PanelPlugin {
 
     logSystem.info(`End of instantiation of ${pluginMeta.name} plugin`);
   }
-
 }

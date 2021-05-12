@@ -2,90 +2,109 @@
   <transition name="fade" mode="out-in">
     <NoPrimitiveSelected v-if="!primitiveID" />
     <div v-else class="panel-content">
+      <OTLModalWindow v-if="isModalVisible" @close="closeModal" @savedOTL="handleOTL" :otlData="tempValue" />
       <div class="panel-header">
         <div class="primitive-info">
           <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
           <input readonly type="text" tabindex="-1" class="node-title" :value="nodeTitle" />
         </div>
-        <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
-          <i class="fas fa-plus icon" />
-        </div>
       </div>
-
-      <div class="property-list" ref="propertyList">
-        <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
-          <div class="card-header">
-            <div class="prop-info">
-              <div class="prop-name">
-                <!-- For scroll property name -->
-                <input readonly tabindex="-1" type="text" :value="propName" />
-              </div>
-              <div class="prop-value">
-                <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
-                <span v-else>
-                  <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
-                  <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
-                </span>
-              </div>
+      <div class="properties-container">
+        <div class="property-list" ref="propertyList">
+          <div class="prop-header">
+            <div>
+              <p>{{ primitiveID }} properties:</p>
             </div>
-            <div class="btn delete-prop-btn" title="Delete property" @click="deleteProperty(propName)">
-              <i class="far fa-trash-alt icon" />
+            <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
+              <i class="fas fa-plus icon" />
             </div>
           </div>
-          <div class="card-content">
-            <select class="prop-type" v-model="prop.type">
-              <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
-            </select>
-            <textarea v-model="prop.expression" rows="1" class="prop-expression" placeholder="Enter expression" />
-          </div>
-        </div>
-
-        <div v-for="(prop, propName) in addedPropertiesList" :key="propName" class="property-card">
-          <div class="card-header">
-            <div class="prop-info">
-              <div class="prop-name">
-                <input
-                  v-model="addedPropertiesList[propName].name"
-                  :ref="propName"
-                  class="editable"
-                  type="text"
-                  placeholder="Enter name..."
-                />
-              </div>
-              <div class="prop-value">
-                <div
-                  class="btn confirm-add-prop-btn"
-                  :class="{ disabled: addedPropertiesList[propName].name.length <= 0 }"
-                  title="Add property"
-                  @click="addPropertyToPrimitive(propName)"
-                >
-                  <i class="fas fa-check icon" />
+          <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
+            <div class="card-header">
+              <div class="prop-info">
+                <div class="prop-name">
+                  <!-- For scroll property name -->
+                  <input readonly tabindex="-1" type="text" :value="propName" />
+                </div>
+                <div class="prop-value">
+                  <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
+                  <span v-else>
+                    <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
+                    <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
+                  </span>
                 </div>
               </div>
+              <div class="btn delete-prop-btn" title="Delete property" @click="deleteProperty(propName)">
+                <i class="far fa-trash-alt icon" />
+              </div>
             </div>
-            <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedProperty(propName)">
-              <i class="far fa-trash-alt icon" />
+            <div class="card-content">
+              <select class="prop-type" v-model="prop.type">
+                <option
+                  v-for="option in propertyTypes"
+                  :value="$root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option"
+                  :key="option"
+                  v-text="option.toUpperCase()"
+                />
+              </select>
+              <button v-if="prop.type === 'datasource'" type="button" class="otl-button" @click="showModal(prop)">
+                Edit {{ prop.expression.type }}
+              </button>
+              <textarea
+                v-else
+                v-model="prop.expression"
+                rows="1"
+                class="prop-expression"
+                placeholder="Enter expression"
+              />
             </div>
           </div>
-          <div class="card-content">
-            <select class="prop-type" v-model="addedPropertiesList[propName].type">
-              <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
-            </select>
-            <textarea
-              class="prop-expression"
-              placeholder="Enter expression"
-              rows="1"
-              v-model="addedPropertiesList[propName].expression"
-            />
+
+          <div v-for="(prop, propName) in addedPropertiesList" :key="propName" class="property-card">
+            <div class="card-header">
+              <div class="prop-info">
+                <div class="prop-name">
+                  <input
+                    v-model="addedPropertiesList[propName].name"
+                    :ref="propName"
+                    class="editable"
+                    type="text"
+                    placeholder="Enter name..."
+                  />
+                </div>
+                <div class="prop-value">
+                  <div
+                    class="btn confirm-add-prop-btn"
+                    :class="{ disabled: addedPropertiesList[propName].name.length <= 0 }"
+                    title="Add property"
+                    @click="addPropertyToPrimitive(propName)"
+                  >
+                    <i class="fas fa-check icon" />
+                  </div>
+                </div>
+              </div>
+              <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedProperty(propName)">
+                <i class="far fa-trash-alt icon" />
+              </div>
+            </div>
+            <div class="card-content">
+              <select class="prop-type" v-model="addedPropertiesList[propName].type">
+                <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
+              </select>
+              <textarea
+                class="prop-expression"
+                placeholder="Enter expression"
+                rows="1"
+                v-model="addedPropertiesList[propName].expression"
+              />
+            </div>
           </div>
-        </div>
-        <p>Ports:</p>
-        <div v-for="port in portList" :key="port" class="property-card">
+          <!-- <div v-for="port in portList" :key="port" class="property-card">
           <div class="card-header">
             <div class="prop-info">
               <div class="prop-name">
-                <!-- For scroll property name -->
-                <input readonly tabindex="-1" type="text" :value="port.primitiveName" />
+                For scroll property name
+                <input readonly tabindex="-1" type="text" :value="port.primitiveID" />
               </div>
               <div class="prop-value">
                 <span
@@ -99,14 +118,108 @@
                 </span>
               </div>
             </div>
+            <div class="btn delete-prop-btn" title="Delete property" @click="deletePort(port)">
+              <i class="far fa-trash-alt icon" />
+            </div>
           </div>
           <div class="card-content">
+            <label>status:</label>
             <textarea
               v-model="port.properties.status.expression"
               rows="1"
               class="prop-expression"
               placeholder="Enter expression"
             />
+          </div>
+        </div> -->
+        </div>
+        <div class="property-list" ref="propertyList" v-for="port in portList" :key="port">
+          <div class="prop-header">
+            <div>
+              <p>{{ port.primitiveID }} properties:</p>
+            </div>
+            <div class="btn add-prop-btn" title="Add property" @click="addNewPortPropertyForm(port)">
+              <i class="fas fa-plus icon" />
+            </div>
+          </div>
+          <div v-for="(prop, propName) in port.properties" :key="propName" class="property-card">
+            <div class="card-header">
+              <div class="prop-info">
+                <div class="prop-name">
+                  <!-- For scroll property name -->
+                  <input readonly tabindex="-1" type="text" :value="propName" />
+                </div>
+                <div class="prop-value">
+                  <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
+                  <span v-else>
+                    <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
+                    <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
+                  </span>
+                </div>
+              </div>
+              <div class="btn delete-prop-btn" title="Delete property" @click="deletePortProperty(port, propName)">
+                <i class="far fa-trash-alt icon" />
+              </div>
+            </div>
+            <div class="card-content">
+              <select class="prop-type" v-model="prop.type">
+                <option
+                  v-for="option in propertyTypes"
+                  :value="$root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option"
+                  :key="option"
+                  v-text="option.toUpperCase()"
+                />
+              </select>
+              <button v-if="prop.type === 'datasource'" type="button" class="otl-button" @click="showModal(prop)">
+                Edit {{ prop.expression.type }}
+              </button>
+              <textarea
+                v-else
+                v-model="prop.expression"
+                rows="1"
+                class="prop-expression"
+                placeholder="Enter expression"
+              />
+            </div>
+          </div>
+
+          <div v-for="(prop, index) in addedPortPropertiesList[port.primitiveID]" :key="prop" class="property-card">
+            <div class="card-header">
+              <div class="prop-info">
+                <div class="prop-name">
+                  <input
+                    v-model="addedPortPropertiesList[port.primitiveID][index].name"
+                    class="editable"
+                    type="text"
+                    placeholder="Enter name..."
+                  />
+                </div>
+                <div class="prop-value">
+                  <div
+                    class="btn confirm-add-prop-btn"
+                    title="Add property"
+                    :class="{ disabled: addedPortPropertiesList[port.primitiveID][index].name.length <= 0 }"
+                    @click="addPortPropertyToPrimitive(prop, port)"
+                  >
+                    <i class="fas fa-check icon" />
+                  </div>
+                </div>
+              </div>
+              <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedPortProperty(port, index)">
+                <i class="far fa-trash-alt icon" />
+              </div>
+            </div>
+            <div class="card-content">
+              <select class="prop-type" v-model="addedPortPropertiesList[port.primitiveID][index].type">
+                <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
+              </select>
+              <textarea
+                class="prop-expression"
+                placeholder="Enter expression"
+                rows="1"
+                v-model="addedPortPropertiesList[port.primitiveID].expression"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -117,10 +230,11 @@
 <script>
 import NoPrimitiveSelected from './NoPrimitiveSelected.vue';
 import StatusIcon from './StatusIcon.vue';
+import OTLModalWindow from '@/components/OTLModalWindow.vue';
 
 export default {
   name: 'PrimitivePropertiesPanel',
-  components: { NoPrimitiveSelected, StatusIcon },
+  components: { NoPrimitiveSelected, StatusIcon, OTLModalWindow },
   data: ({ $root }) => ({
     guid: $root.guid,
     logSystem: $root.logSystem,
@@ -129,12 +243,24 @@ export default {
     nodeTitle: '',
     propertyList: {},
     propertyStatusList: {},
-    propertyTypes: ['expression', 'OTL'],
+    propertyTypes: ['expression'],
     newPropsCount: 1,
     addedPropertiesList: {},
+    addedPortPropertiesList: {},
     portList: [],
+    isModalVisible: false,
+    tempValue: {
+      search: '',
+      tws: null,
+      twf: null,
+      cacheTime: null,
+    },
+    editableOTL: null,
   }),
   mounted() {
+    this.propertyTypes.push(...this.$root.dataSourceSystem.dataSourceTypes);
+    this.logSystem.debug('Set types of DataSourceSystem');
+
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
 
     let customAction;
@@ -153,6 +279,23 @@ export default {
     this.eventSystem.subscribe('DeleteLiveDashItem', customAction.id);
   },
   methods: {
+    showModal(prop) {
+      if (typeof prop.expression !== 'string') {
+        this.tempValue = prop.expression;
+      } else {
+        this.tempValue = {
+          search: '',
+          tws: null,
+          twf: null,
+          cacheTime: null,
+        };
+      }
+      this.editableOTL = prop;
+      this.isModalVisible = true;
+    },
+    closeModal() {
+      this.isModalVisible = false;
+    },
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
       const { name: eventName } = event;
@@ -206,18 +349,53 @@ export default {
       this.logSystem.info(`Сancel adding a new property to ${this.primitiveID} node`);
     },
 
+    deletePort(port) {
+      console.log(port);
+    },
+    deletePortProperty(port, propName) {
+      this.$delete(port.properties, propName);
+    },
+    deleteAddedPortProperty(port, index) {
+      this.addedPortPropertiesList[port.primitiveID].splice(index, 1);
+    },
+    addNewPortPropertyForm(port) {
+      const property = {
+        name: '',
+        value: '',
+        type: 'expression',
+        status: '',
+        expression: '',
+      };
+      if (!this.addedPortPropertiesList[port.primitiveID]) {
+        this.$set(this.addedPortPropertiesList, port.primitiveID, [property]);
+      } else this.addedPortPropertiesList[port.primitiveID].push(property);
+    },
+    async addPortPropertyToPrimitive(prop, port) {
+      const { name, type, status, value, expression } = prop;
+      const existedProperties = Object.keys(port.properties).map(key => key.toLocaleLowerCase());
+
+      if (!existedProperties.includes(name.toLocaleLowerCase())) {
+        await this.$set(port.properties, name, { value, type, status, expression });
+        this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
+        this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
+
+        const index = this.addedPortPropertiesList[port.primitiveID].indexOf(prop);
+        this.addedPortPropertiesList[port.primitiveID].splice(index, 1);
+      }
+    },
+
     addNewPropertyForm() {
       const propName = `prop${this.newPropsCount}`;
       const property = {
         name: '',
         value: '',
         type: 'expression',
-        status: 'inProgress',
+        status: '',
         expression: '',
       };
       this.$set(this.addedPropertiesList, propName, property);
-      this.$nextTick(() => this.$refs[propName][0].focus());
-      this.scrollPropertyListDown();
+      // this.$nextTick(() => this.$refs[propName][0].focus());
+      // this.scrollPropertyListDown();
       this.newPropsCount += 1;
     },
 
@@ -241,12 +419,16 @@ export default {
         this.logSystem.debug(`Scrolling properties container down`);
       });
     },
+    handleOTL(otlRequestData) {
+      this.editableOTL.expression = otlRequestData;
+      this.editableOTL = null;
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-@import './../styles/base';
+@import './../styles/base.scss';
 
 $panel-header-height: 60px;
 $c-blue: #2196f3;
@@ -373,17 +555,29 @@ $c-green: #4caf50;
     }
   }
 
+  .properties-container {
+    margin-top: 60px;
+    overflow-y: scroll;
+  }
   .property-list {
-    height: 100%;
-    margin-top: $panel-header-height;
     padding-bottom: 20px;
-    overflow-y: auto;
+
+    .prop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .section-title {
+      margin-top: 10px;
+      margin-left: 10px;
+    }
 
     .property-card {
       display: flex;
       flex-direction: column;
       padding: 0 20px;
-      margin-top: 20px;
 
       .card-header {
         display: flex;
@@ -434,6 +628,10 @@ $c-green: #4caf50;
           display: block;
           height: $select-height;
           outline: none;
+        }
+        .otl-button {
+          min-width: 100px;
+          margin-left: 20px;
         }
 
         .prop-expression {
