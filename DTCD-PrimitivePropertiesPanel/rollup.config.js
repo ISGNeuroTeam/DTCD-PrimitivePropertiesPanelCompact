@@ -2,6 +2,8 @@ import vue from 'rollup-plugin-vue2';
 import alias from '@rollup/plugin-alias';
 import styles from 'rollup-plugin-styles';
 import replace from '@rollup/plugin-replace';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 
 import path from 'path';
 import pluginMeta from './src/Plugin.Meta';
@@ -13,6 +15,8 @@ const outputFile = `${pluginName}.js`;
 const outputDirectory = watch ? `./../../DTCD/server/plugins/DTCD-${pluginName}` : `./build`;
 
 const plugins = [
+  commonjs(),
+  nodeResolve(),
   vue(),
   alias({
     entries: {
