@@ -249,12 +249,7 @@ export default {
     addedPortPropertiesList: {},
     portList: [],
     isModalVisible: false,
-    tempValue: {
-      search: '',
-      tws: null,
-      twf: null,
-      cacheTime: null,
-    },
+    tempValue: {},
     editableOTL: null,
   }),
   mounted() {
@@ -283,11 +278,12 @@ export default {
       if (typeof prop.expression !== 'string') {
         this.tempValue = prop.expression;
       } else {
+        const defaultTimestamp = Math.floor(+new Date() / 1000);
         this.tempValue = {
-          search: '',
-          tws: null,
-          twf: null,
-          cacheTime: null,
+          original_otl: '',
+          tws: defaultTimestamp,
+          twf: defaultTimestamp,
+          cache_ttl: 60,
         };
       }
       this.editableOTL = prop;

@@ -12,9 +12,60 @@
             <div class="label-wrapper">
               <label>TTL</label>
             </div>
-            <input id="ttl" type="number" class="input" v-model="tempValue.cacheTime" />
+            <input id="ttl" type="number" class="input" v-model="tempValue.cache_ttl" />
           </div>
-          <div class="form-field">
+          <div class="label-wrapper">
+            <label>Time range</label>
+          </div>
+          <DatePicker v-model="range" mode="dateTime" :masks="masks" is-range>
+            <template v-slot="{ inputValue, inputEvents }">
+              <div class="template1">
+                <div class="input-container1">
+                  <svg
+                    class="calendar-icon1"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    ></path>
+                  </svg>
+                  <input :value="inputValue.start" v-on="inputEvents.start" class="input-field1" />
+                </div>
+                <span class="flex-shrink-0 m-2">
+                  <svg style="strok: black" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </svg>
+                </span>
+                <div class="input-container1">
+                  <svg
+                    class="calendar-icon1"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    ></path>
+                  </svg>
+                  <input :value="inputValue.end" v-on="inputEvents.end" class="input-field1" />
+                </div>
+              </div>
+            </template>
+          </DatePicker>
+          <!-- <div class="form-field">
             <div class="label-wrapper">
               <label>From</label>
             </div>
@@ -25,7 +76,7 @@
               <label>To</label>
             </div>
             <input ref="datetimeTo" type="datetime-local" class="input" v-model="tempValue.twf" />
-          </div>
+          </div> -->
           <div class="form-field">
             <div class="label-wrapper">
               <label>OTL</label>
@@ -34,7 +85,7 @@
               <textarea
                 name="text"
                 id="text"
-                v-model="tempValue.search"
+                v-model="tempValue.original_otl"
                 onInput="this.parentNode.dataset.replicatedValue = this.value"
               ></textarea>
             </div>
@@ -51,7 +102,11 @@
 </template>
 
 <script>
+import DatePicker from 'v-calendar/lib/components/date-picker.umd';
 export default {
+  components: {
+    DatePicker,
+  },
   name: 'OTLModalWindow',
   props: {
     otlData: Object,
@@ -59,26 +114,30 @@ export default {
   data() {
     return {
       tempValue: {
-        type:"OTL",
-        search: '',
+        type: 'OTL',
+        original_otl: '',
         tws: null,
         twf: null,
-        cacheTime: null,
+        cache_ttl: null,
+      },
+      range: {
+        start: new Date(),
+        end: new Date(),
+      },
+      masks: {
+        input: 'YYYY-MM-DD h:mm A',
       },
     };
   },
   mounted() {
-    let {cacheTime=100, search, tws, twf} = this.otlData;
-    // transform ISO date into Locale Russia (+3 hour)
-    [tws, twf] = [new Date(tws), new Date(twf)].map(date=>date.setHours(date.getHours()+3)*1000)
-
     this.tempValue = {
-      type:"OTL", 
-      tws:new Date(tws).toISOString().substr(0,16), 
-      twf:new Date(twf).toISOString().substr(0,16), 
-      search, 
-      cacheTime
-    }
+      type: 'OTL',
+      ...this.otlData,
+    };
+    this.range = {
+      start: new Date(this.tempValue.tws * 1000),
+      end: new Date(this.tempValue.twf * 1000),
+    };
   },
   methods: {
     close() {
@@ -86,19 +145,20 @@ export default {
       this.clearTempValue();
     },
     save() {
-      this.tempValue.search.trim()
-      this.tempValue.tws = Date.parse(this.tempValue.tws)/1000
-      this.tempValue.twf = Date.parse(this.tempValue.twf)/1000
+      this.tempValue.original_otl.trim();
+      this.tempValue.tws = Date.parse(this.range.end) / 1000;
+      this.tempValue.twf = Date.parse(this.range.start) / 1000;
+      console.log(this.tempValue);
       this.$emit('savedOTL', this.tempValue);
       this.close();
     },
     clearTempValue() {
       this.tempValue = {
-        type:"OTL",
-        search: '',
-        tws: null,
-        twf: null,
-        cacheTime: null,
+        type: 'OTL',
+        original_otl: '',
+        tws: new Date(),
+        twf: new Date(),
+        cache_ttl: null,
       };
     },
   },
@@ -219,5 +279,25 @@ export default {
 }
 .form-field {
   margin-bottom: 10px;
+}
+.template1 {
+  display: flex;
+}
+.input-container1 {
+  position: relative;
+  margin-right: 10px;
+}
+.calendar-icon1 {
+  position: absolute;
+  width: 1rem;
+  margin: 8px;
+}
+.input-field1 {
+  background-color: #f7fafc;
+  border-width: 1px;
+  border-radius: 5px;
+  padding: 8px 0 8px 25px;
+  font-size: 100%;
+  border: 1px solid #e2e8f0;
 }
 </style>
