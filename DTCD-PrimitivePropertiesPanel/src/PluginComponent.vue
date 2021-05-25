@@ -1,9 +1,9 @@
-<template functional>
-  <PrimitivePropertiesPanel/>
+<template>
+  <PrimitivePropertiesPanel />
 </template>
 
 <script>
-import PrimitivePropertiesPanel from './components/PrimitivePropertiesPanel.vue';
+import PrimitivePropertiesPanel from '@/components/PrimitivePropertiesPanel';
 
 export default {
   name: 'PluginComponent',
