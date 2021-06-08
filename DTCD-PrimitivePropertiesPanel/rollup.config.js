@@ -1,9 +1,10 @@
-import vue from 'rollup-plugin-vue2';
 import alias from '@rollup/plugin-alias';
+import vue from 'rollup-plugin-vue';
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+
 import styles from 'rollup-plugin-styles';
 import replace from '@rollup/plugin-replace';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
 
 import path from 'path';
 import pluginMeta from './src/Plugin.Meta';
@@ -15,9 +16,17 @@ const outputFile = `${pluginName}.js`;
 const outputDirectory = watch ? `./../../DTCD/server/plugins/DTCD-${pluginName}` : `./build`;
 
 const plugins = [
+  resolve({
+    jsnext: true,
+    preferBuiltins: true,
+    browser: true,
+    dedupe: ['vue'],
+    extensions: ['.mjs', '.js', '.json', '.node', '.vue'],
+  }),
   commonjs(),
-  nodeResolve(),
-  vue(),
+  vue({
+    preprocessStyles: true,
+  }),
   alias({
     entries: {
       '@': path.resolve(__dirname, 'src'),
@@ -25,6 +34,7 @@ const plugins = [
   }),
   styles({
     mode: 'inject',
+    modules: true,
   }),
   replace({
     preventAssignment: true,

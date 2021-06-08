@@ -2,7 +2,12 @@
   <transition name="fade" mode="out-in">
     <NoPrimitiveSelected v-if="!primitiveID" />
     <div v-else class="panel-content">
-      <OTLModalWindow v-if="isModalVisible" @close="closeModal" @savedOTL="handleOTL" :otlData="tempValue" />
+      <OTLModalWindow
+        v-if="isModalVisible"
+        @close="closeModal"
+        @savedOTL="handleOTL"
+        :otlData="tempValue"
+      />
       <div class="panel-header">
         <div class="primitive-info">
           <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
@@ -34,7 +39,11 @@
                   </span>
                 </div>
               </div>
-              <div class="btn delete-prop-btn" title="Delete property" @click="deleteProperty(propName)">
+              <div
+                class="btn delete-prop-btn"
+                title="Delete property"
+                @click="deleteProperty(propName)"
+              >
                 <i class="far fa-trash-alt icon" />
               </div>
             </div>
@@ -42,12 +51,19 @@
               <select class="prop-type" v-model="prop.type">
                 <option
                   v-for="option in propertyTypes"
-                  :value="$root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option"
+                  :value="
+                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
+                  "
                   :key="option"
                   v-text="option.toUpperCase()"
                 />
               </select>
-              <button v-if="prop.type === 'datasource'" type="button" class="otl-button" @click="showModal(prop)">
+              <button
+                v-if="prop.type === 'datasource'"
+                type="button"
+                class="otl-button"
+                @click="showModal(prop)"
+              >
                 Edit {{ prop.expression.type }}
               </button>
               <textarea
@@ -60,7 +76,11 @@
             </div>
           </div>
 
-          <div v-for="(prop, propName) in addedPropertiesList" :key="propName" class="property-card">
+          <div
+            v-for="(prop, propName) in addedPropertiesList"
+            :key="propName"
+            class="property-card"
+          >
             <div class="card-header">
               <div class="prop-info">
                 <div class="prop-name">
@@ -83,13 +103,22 @@
                   </div>
                 </div>
               </div>
-              <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedProperty(propName)">
+              <div
+                class="btn delete-prop-btn"
+                title="Delete property"
+                @click="deleteAddedProperty(propName)"
+              >
                 <i class="far fa-trash-alt icon" />
               </div>
             </div>
             <div class="card-content">
               <select class="prop-type" v-model="addedPropertiesList[propName].type">
-                <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
+                <option
+                  v-for="option in propertyTypes"
+                  :key="option"
+                  :value="option"
+                  v-text="option.toUpperCase()"
+                />
               </select>
               <textarea
                 class="prop-expression"
@@ -138,7 +167,11 @@
             <div>
               <p>{{ port.primitiveID }} properties:</p>
             </div>
-            <div class="btn add-prop-btn" title="Add property" @click="addNewPortPropertyForm(port)">
+            <div
+              class="btn add-prop-btn"
+              title="Add property"
+              @click="addNewPortPropertyForm(port)"
+            >
               <i class="fas fa-plus icon" />
             </div>
           </div>
@@ -157,7 +190,11 @@
                   </span>
                 </div>
               </div>
-              <div class="btn delete-prop-btn" title="Delete property" @click="deletePortProperty(port, propName)">
+              <div
+                class="btn delete-prop-btn"
+                title="Delete property"
+                @click="deletePortProperty(port, propName)"
+              >
                 <i class="far fa-trash-alt icon" />
               </div>
             </div>
@@ -165,12 +202,19 @@
               <select class="prop-type" v-model="prop.type">
                 <option
                   v-for="option in propertyTypes"
-                  :value="$root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option"
+                  :value="
+                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
+                  "
                   :key="option"
                   v-text="option.toUpperCase()"
                 />
               </select>
-              <button v-if="prop.type === 'datasource'" type="button" class="otl-button" @click="showModal(prop)">
+              <button
+                v-if="prop.type === 'datasource'"
+                type="button"
+                class="otl-button"
+                @click="showModal(prop)"
+              >
                 Edit {{ prop.expression.type }}
               </button>
               <textarea
@@ -183,7 +227,11 @@
             </div>
           </div>
 
-          <div v-for="(prop, index) in addedPortPropertiesList[port.primitiveID]" :key="prop" class="property-card">
+          <div
+            v-for="(prop, index) in addedPortPropertiesList[port.primitiveID]"
+            :key="prop"
+            class="property-card"
+          >
             <div class="card-header">
               <div class="prop-info">
                 <div class="prop-name">
@@ -198,20 +246,34 @@
                   <div
                     class="btn confirm-add-prop-btn"
                     title="Add property"
-                    :class="{ disabled: addedPortPropertiesList[port.primitiveID][index].name.length <= 0 }"
+                    :class="{
+                      disabled: addedPortPropertiesList[port.primitiveID][index].name.length <= 0,
+                    }"
                     @click="addPortPropertyToPrimitive(prop, port)"
                   >
                     <i class="fas fa-check icon" />
                   </div>
                 </div>
               </div>
-              <div class="btn delete-prop-btn" title="Delete property" @click="deleteAddedPortProperty(port, index)">
+              <div
+                class="btn delete-prop-btn"
+                title="Delete property"
+                @click="deleteAddedPortProperty(port, index)"
+              >
                 <i class="far fa-trash-alt icon" />
               </div>
             </div>
             <div class="card-content">
-              <select class="prop-type" v-model="addedPortPropertiesList[port.primitiveID][index].type">
-                <option v-for="option in propertyTypes" :key="option" :value="option" v-text="option.toUpperCase()" />
+              <select
+                class="prop-type"
+                v-model="addedPortPropertiesList[port.primitiveID][index].type"
+              >
+                <option
+                  v-for="option in propertyTypes"
+                  :key="option"
+                  :value="option"
+                  v-text="option.toUpperCase()"
+                />
               </select>
               <textarea
                 class="prop-expression"
@@ -228,9 +290,9 @@
 </template>
 
 <script>
-import NoPrimitiveSelected from './NoPrimitiveSelected.vue';
-import StatusIcon from './StatusIcon.vue';
-import OTLModalWindow from '@/components/OTLModalWindow.vue';
+import NoPrimitiveSelected from '@/components//NoPrimitiveSelected';
+import StatusIcon from '@/components/StatusIcon';
+import OTLModalWindow from '@/components/OTLModalWindow';
 
 export default {
   name: 'PrimitivePropertiesPanel',
