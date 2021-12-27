@@ -23,20 +23,31 @@ export class Plugin extends PanelPlugin {
     const VueJS = this.getDependence('Vue');
     logSystem.debug(`Get Vue dependence in ${pluginMeta.name} plugin`);
 
-    const eventSystem = new EventSystemAdapter();
+    const eventSystem = new EventSystemAdapter(guid);
     logSystem.debug(`Create EventSystemAdapter instance in ${pluginMeta.name} plugin`);
+    eventSystem.registerPluginInstance(this);
 
     const dataSourceSystem = new DataSourceSystemAdapter();
     logSystem.debug(`Create DataSourceSystemAdapter instance in ${pluginMeta.name} plugin`);
 
-    const data = {guid, logSystem, eventSystem, dataSourceSystem};
+    const data = { guid, logSystem, eventSystem, dataSourceSystem };
 
     logSystem.debug(`Creating Vue instance in ${pluginMeta.name} plugin`);
-    new VueJS.default({
+    this.vue = new VueJS.default({
       data: () => data,
       render: h => h(PluginComponent),
     }).$mount(selector);
 
     logSystem.info(`End of instantiation of ${pluginMeta.name} plugin`);
+  }
+
+  showPropertiesInPanel(eventData) {
+    const component = this.vue.$children[0].$children[0];
+    return component.processPrimitiveEvent(eventData);
+  }
+
+  clearPropertiesPanelByDelete(eventData) {
+    const component = this.vue.$children[0].$children[0];
+    return component.processLivedashPrimitiveDeleteEvent(eventData);
   }
 }

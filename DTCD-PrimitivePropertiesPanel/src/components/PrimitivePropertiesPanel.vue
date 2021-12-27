@@ -301,6 +301,7 @@ export default {
     guid: $root.guid,
     logSystem: $root.logSystem,
     eventSystem: $root.eventSystem,
+    pluginInstance: $root.pluginInstance,
     primitiveID: '',
     nodeTitle: '',
     propertyList: {},
@@ -319,21 +320,6 @@ export default {
     this.logSystem.debug('Set types of DataSourceSystem');
 
     this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
-
-    let customAction;
-    customAction = this.eventSystem.createActionByCallback(
-      'showPropertiesInPanel',
-      this.guid,
-      this.processPrimitiveEvent.bind(this)
-    );
-    this.eventSystem.subscribe('BroadcastPrimitiveInfo', customAction.id);
-
-    customAction = this.eventSystem.createActionByCallback(
-      'clearPropertiesPanelByDelete',
-      this.guid,
-      this.processLivedashPrimitiveDeleteEvent.bind(this)
-    );
-    this.eventSystem.subscribe('DeleteLiveDashItem', customAction.id);
   },
   methods: {
     showModal(prop) {
@@ -354,16 +340,14 @@ export default {
     closeModal() {
       this.isModalVisible = false;
     },
+    processNodeProperty(propName,expression){
+      this.primitiveProperties[propName].expression = expression
+    },
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
-      const { name: eventName } = event;
-      let { primitiveTag: primitive = {}, ports } = event.args;
-      this.portList = ports;
-
-      if (eventName !== 'BroadcastPrimitiveInfo') {
-        this.logSystem.error('Expected BroadcastPrimitiveInfo event');
-        return;
-      }
+      let { primitiveTag: primitive = {}, ports } = event;
+      this.portList = JSON.parse(JSON.stringify(ports));
+      this.primitivePorts = ports;
 
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitive;
 
@@ -371,7 +355,7 @@ export default {
         if (!properties[prop].type) properties[prop].type = 'expression';
         if (!properties[prop].expression) properties[prop].expression = '';
       }
-
+      this.primitiveProperties = properties;
       this.primitiveID = primitiveID;
       this.nodeTitle = nodeTitle;
       this.propertyList = properties;
