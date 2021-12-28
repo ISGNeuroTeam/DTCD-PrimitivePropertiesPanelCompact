@@ -346,7 +346,7 @@ export default {
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
       let { primitiveTag: primitive = {}, ports } = event;
-      this.portList = JSON.parse(JSON.stringify(ports));
+      this.portList = ports
       this.primitivePorts = ports;
 
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitive;
