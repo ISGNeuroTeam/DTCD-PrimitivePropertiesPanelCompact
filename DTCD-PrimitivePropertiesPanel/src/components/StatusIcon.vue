@@ -1,10 +1,6 @@
 <template>
-  <span
-    :key="status"
-    :title="statuses[status].title"
-    :style="{ color: statuses[status].color }"
-  >
-    <i :class="statuses[status].class"/>
+  <span :key="status" :title="statuses[status].title" :style="{ color: statuses[status].color }">
+    <i :class="statuses[status].class" />
   </span>
 </template>
 
@@ -20,16 +16,16 @@ export default {
   data: () => ({
     statuses: {
       error: {
-        class: 'fas fa-exclamation-circle',
+        class: 'FontIcon name_helpCircle',
         color: '#EF5350',
         title: 'Property calculation error',
       },
       inProgress: {
-        class: 'far fa-clock',
+        class: 'FontIcon name_alarm',
         color: '#2196F3',
         title: 'Property is calcutating',
       },
-    }
+    },
   }),
 };
 </script>

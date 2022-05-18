@@ -11,7 +11,13 @@
       <div class="panel-header">
         <div class="primitive-info">
           <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
-          <input readonly type="text" tabindex="-1" class="node-title" :value="nodeTitle" />
+          <input
+            readonly
+            type="text"
+            tabindex="-1"
+            class="node-title"
+            :value="nodeTitle.replace(/(<([^>]+)>)/gi, '')"
+          />
         </div>
       </div>
       <div class="properties-container">
@@ -21,7 +27,15 @@
               <p>{{ primitiveID }} properties:</p>
             </div>
             <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
-              <i class="fas fa-plus icon" />
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M13 13V19H11V13H5V11H11V5H13V11H19V13H13Z" />
+              </svg>
             </div>
           </div>
           <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
@@ -32,7 +46,7 @@
                   <input readonly tabindex="-1" type="text" :value="propName" />
                 </div>
                 <div class="prop-value">
-                  <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
+                  <span v-if="prop.status === 'complete'" v-text="prop.value" />
                   <span v-else>
                     <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
                     <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
@@ -44,7 +58,11 @@
                 title="Delete property"
                 @click="deleteProperty(propName)"
               >
-                <i class="far fa-trash-alt icon" />
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                  <path
+                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
+                  />
+                </svg>
               </div>
             </div>
             <div class="card-content">
@@ -99,7 +117,11 @@
                     title="Add property"
                     @click="addPropertyToPrimitive(propName)"
                   >
-                    <i class="fas fa-check icon" />
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                      <path
+                        d="M20.8388 6.69461L8.81799 18.7154L3.16113 13.0586L4.57113 11.6486L8.81799 15.8854L19.4288 5.28461L20.8388 6.69461Z"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -108,7 +130,11 @@
                 title="Delete property"
                 @click="deleteAddedProperty(propName)"
               >
-                <i class="far fa-trash-alt icon" />
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                  <path
+                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
+                  />
+                </svg>
               </div>
             </div>
             <div class="card-content">
@@ -128,78 +154,33 @@
               />
             </div>
           </div>
-          <!-- <div v-for="port in portList" :key="port" class="property-card">
-          <div class="card-header">
-            <div class="prop-info">
-              <div class="prop-name">
-                For scroll property name
-                <input readonly tabindex="-1" type="text" :value="port.primitiveID" />
-              </div>
-              <div class="prop-value">
-                <span
-                  v-if="port.properties.status.status === 'complete'"
-                  :title="port.properties.status.value"
-                  v-text="port.properties.status.value"
-                />
-                <span v-else>
-                  <StatusIcon v-if="port.properties.status.status === 'error'" :status="'error'" />
-                  <StatusIcon v-if="port.properties.status.status === 'inProgress'" :status="'inProgress'" />
-                </span>
-              </div>
-            </div>
-            <div class="btn delete-prop-btn" title="Delete property" @click="deletePort(port)">
-              <i class="far fa-trash-alt icon" />
-            </div>
-          </div>
-          <div class="card-content">
-            <label>status:</label>
-            <textarea
-              v-model="port.properties.status.expression"
-              rows="1"
-              class="prop-expression"
-              placeholder="Enter expression"
-            />
-          </div>
-        </div> -->
-        </div>
-        <div class="property-list" ref="propertyList" v-for="port in portList" :key="port">
-          <div class="prop-header">
-            <div>
-              <p>{{ port.primitiveID }} properties:</p>
-            </div>
-            <div
-              class="btn add-prop-btn"
-              title="Add property"
-              @click="addNewPortPropertyForm(port)"
-            >
-              <i class="fas fa-plus icon" />
-            </div>
-          </div>
-          <div v-for="(prop, propName) in port.properties" :key="propName" class="property-card">
+          <div v-for="port in portList" :key="port" class="property-card">
             <div class="card-header">
               <div class="prop-info">
                 <div class="prop-name">
-                  <!-- For scroll property name -->
-                  <input readonly tabindex="-1" type="text" :value="propName" />
+                  <input readonly tabindex="-1" type="text" :value="port.primitiveName" />
                 </div>
                 <div class="prop-value">
-                  <span v-if="prop.status === 'complete'" :title="prop.value" v-text="prop.value" />
+                  <span
+                    v-if="port.properties.status.status === 'complete'"
+                    v-text="port.properties.status.value"
+                  />
                   <span v-else>
-                    <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
-                    <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
+                    <StatusIcon
+                      v-if="port.properties.status.status === 'error'"
+                      :status="'error'"
+                    />
+                    <StatusIcon
+                      v-if="port.properties.status.status === 'inProgress'"
+                      :status="'inProgress'"
+                    />
                   </span>
                 </div>
               </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deletePortProperty(port, propName)"
-              >
-                <i class="far fa-trash-alt icon" />
-              </div>
             </div>
             <div class="card-content">
-              <select class="prop-type" v-model="prop.type">
+              <!-- <label>{{ port.primitiveName }}</label> -->
+              <select class="prop-type" v-model="port.properties.status.type">
                 <option
                   v-for="option in propertyTypes"
                   :value="
@@ -210,76 +191,19 @@
                 />
               </select>
               <button
-                v-if="prop.type === 'datasource'"
+                v-if="port.properties.status.type === 'datasource'"
                 type="button"
                 class="otl-button"
-                @click="showModal(prop)"
+                @click="showModal(port.properties.status)"
               >
-                Edit {{ prop.expression.type }}
+                Edit OTL
               </button>
               <textarea
                 v-else
-                v-model="prop.expression"
+                v-model="port.properties.status.expression"
                 rows="1"
                 class="prop-expression"
                 placeholder="Enter expression"
-              />
-            </div>
-          </div>
-
-          <div
-            v-for="(prop, index) in addedPortPropertiesList[port.primitiveID]"
-            :key="prop"
-            class="property-card"
-          >
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <input
-                    v-model="addedPortPropertiesList[port.primitiveID][index].name"
-                    class="editable"
-                    type="text"
-                    placeholder="Enter name..."
-                  />
-                </div>
-                <div class="prop-value">
-                  <div
-                    class="btn confirm-add-prop-btn"
-                    title="Add property"
-                    :class="{
-                      disabled: addedPortPropertiesList[port.primitiveID][index].name.length <= 0,
-                    }"
-                    @click="addPortPropertyToPrimitive(prop, port)"
-                  >
-                    <i class="fas fa-check icon" />
-                  </div>
-                </div>
-              </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deleteAddedPortProperty(port, index)"
-              >
-                <i class="far fa-trash-alt icon" />
-              </div>
-            </div>
-            <div class="card-content">
-              <select
-                class="prop-type"
-                v-model="addedPortPropertiesList[port.primitiveID][index].type"
-              >
-                <option
-                  v-for="option in propertyTypes"
-                  :key="option"
-                  :value="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <textarea
-                class="prop-expression"
-                placeholder="Enter expression"
-                rows="1"
-                v-model="addedPortPropertiesList[port.primitiveID].expression"
               />
             </div>
           </div>
@@ -301,12 +225,11 @@ export default {
     guid: $root.guid,
     logSystem: $root.logSystem,
     eventSystem: $root.eventSystem,
-    pluginInstance: $root.pluginInstance,
     primitiveID: '',
     nodeTitle: '',
     propertyList: {},
     propertyStatusList: {},
-    propertyTypes: ['expression'],
+    propertyTypes: ['expression', 'OTL'],
     newPropsCount: 1,
     addedPropertiesList: {},
     addedPortPropertiesList: {},
@@ -314,13 +237,8 @@ export default {
     isModalVisible: false,
     tempValue: {},
     editableOTL: null,
+    primitiveProperties: {},
   }),
-  mounted() {
-    this.propertyTypes.push(...this.$root.dataSourceSystem.dataSourceTypes);
-    this.logSystem.debug('Set types of DataSourceSystem');
-
-    this.logSystem.debug('BroadcastPrimitiveInfo event subscription');
-  },
   methods: {
     showModal(prop) {
       if (typeof prop.expression !== 'string') {
@@ -340,13 +258,10 @@ export default {
     closeModal() {
       this.isModalVisible = false;
     },
-    processNodeProperty(propName,expression){
-      this.primitiveProperties[propName].expression = expression
-    },
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
       let { primitiveTag: primitive = {}, ports } = event;
-      this.portList = ports
+      this.portList = ports;
       this.primitivePorts = ports;
 
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitive;
@@ -365,12 +280,12 @@ export default {
       this.logSystem.debug(`End of propcessing event BroadcastPrimitiveInfo`);
     },
 
-    processLivedashPrimitiveDeleteEvent(event = {}) {
-      let { args } = event;
+    processLivedashPrimitiveDeleteEvent(eventData) {
+      const { text, tag } = eventData;
       // Check if label by nextline
-      if (args.text) this.nodeTitle = '';
+      if (text) this.nodeTitle = '';
 
-      if (args.tag && args.tag.primitiveID === this.primitiveID) {
+      if (tag && tag.primitiveID === this.primitiveID) {
         this.primitiveID = '';
         this.nodeTitle = '';
         this.newPropsCount = 1;
@@ -381,6 +296,7 @@ export default {
 
     deleteProperty(propName) {
       this.$delete(this.propertyList, propName);
+      this.$delete(this.primitiveProperties, propName);
       this.logSystem.debug(`Deleting property ${propName} from ${this.primitiveID} node`);
       this.logSystem.info(`Deleting property ${propName} from ${this.primitiveID} node`);
     },
@@ -447,6 +363,7 @@ export default {
 
       if (!existedProperties.includes(name.toLocaleLowerCase())) {
         await this.$set(this.propertyList, name, { value, type, status, expression });
+        await this.$set(this.primitiveProperties, name, { value, type, status, expression });
         this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
         this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
 
@@ -498,22 +415,24 @@ $c-green: #4caf50;
     .icon {
       color: #757575;
       font-size: 15px;
-      transition: $transition-time;
     }
 
     &.add-prop-btn {
       border-color: $c-blue;
 
-      .icon {
-        color: $c-blue;
+      path {
+        fill: $c-blue;
       }
 
       &:hover {
         background-color: $c-blue;
 
-        .icon {
-          color: #fff;
+        svg {
           transform: rotate(180deg);
+        }
+
+        path {
+          fill: #fff;
         }
       }
     }
@@ -522,15 +441,15 @@ $c-green: #4caf50;
       flex-shrink: 0;
       border-color: $c-red;
 
-      .icon {
-        color: $c-red;
+      path {
+        fill: $c-red;
       }
 
       &:hover {
         background-color: $c-red;
 
-        .icon {
-          color: #fff;
+        path {
+          fill: #fff;
         }
       }
     }
@@ -538,15 +457,15 @@ $c-green: #4caf50;
     &.confirm-add-prop-btn {
       border-color: $c-green;
 
-      .icon {
-        color: $c-green;
+      path {
+        fill: $c-green;
       }
 
       &:hover {
         background-color: $c-green;
 
-        .icon {
-          color: #fff;
+        path {
+          fill: #fff;
         }
       }
     }
@@ -555,8 +474,8 @@ $c-green: #4caf50;
       pointer-events: none;
       border-color: #959595;
 
-      .icon {
-        color: #959595;
+      path {
+        fill: #959595;
       }
     }
   }
@@ -619,7 +538,7 @@ $c-green: #4caf50;
     .property-card {
       display: flex;
       flex-direction: column;
-      padding: 0 20px;
+      padding: 7px 20px;
 
       .card-header {
         display: flex;
@@ -650,11 +569,16 @@ $c-green: #4caf50;
           }
 
           .prop-value {
-            display: flex;
-            justify-content: flex-end;
-            flex: 1 0;
+            max-width: 70%;
             font-size: 15px;
             padding: 0 20px;
+            margin-left: auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 5; /* number of lines to show */
+            line-clamp: 5;
+            -webkit-box-orient: vertical;
           }
         }
       }

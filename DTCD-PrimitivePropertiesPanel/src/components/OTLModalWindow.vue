@@ -138,7 +138,6 @@ export default {
       this.tempValue.original_otl.trim();
       this.tempValue.tws = Date.parse(this.range.end) / 1000;
       this.tempValue.twf = Date.parse(this.range.start) / 1000;
-      console.log(this.tempValue);
       this.$emit('savedOTL', this.tempValue);
       this.close();
     },
@@ -165,7 +164,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 5;
+  z-index: 15;
 }
 
 .modal {
