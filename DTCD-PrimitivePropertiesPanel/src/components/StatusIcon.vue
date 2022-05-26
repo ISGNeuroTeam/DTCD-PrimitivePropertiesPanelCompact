@@ -34,6 +34,7 @@ export default {
 <style lang="scss" scoped>
 
 .FontIcon {
+  cursor: pointer;
 
   &.name_error {
     color: var(--danger);

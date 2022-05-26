@@ -10,10 +10,11 @@
       <div class="PanelHeader">
         <div class="PrimitiveTitle">
           <base-heading theme="theme_subheaderSmall" >
-            <input readonly type="text" tabindex="-1" class="NodeId" :value="primitiveID" /> 
+            <input placeholder="PrimitivePropertiesPanel" readonly type="text" tabindex="-1" class="NodeId" :value="primitiveID" /> 
           </base-heading>
           <input
             readonly
+            placeholder="подзаголовок"
             type="text"
             tabindex="-1"
             class="NodeTitle"
@@ -343,12 +344,20 @@ export default {
       width: 100%;
       padding-bottom: 4px;
       padding-right: 20px;
+
+      &::-webkit-input-placeholder { 
+        color: var(--title);
+      }
     }
 
     .NodeTitle {
       font-size: 17px;
       padding-right: 20px;
       color: var(--title);
+
+      &::-webkit-input-placeholder { 
+        color: var(--title);
+      }
     }
 
     .NodeId,
