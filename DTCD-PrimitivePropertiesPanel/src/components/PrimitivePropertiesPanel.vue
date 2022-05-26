@@ -1,210 +1,139 @@
 <template>
   <transition name="fade" mode="out-in">
-    <NoPrimitiveSelected v-if="!primitiveID" />
-    <div v-else class="panel-content">
-      <OTLModalWindow
+    <div class="PrimitivePropertiesPanel">
+      <ElementSettings
         v-if="isModalVisible"
         @close="closeModal"
         @savedOTL="handleOTL"
         :otlData="tempValue"
       />
-      <div class="panel-header">
-        <div class="primitive-info">
-          <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
+      <div class="PanelHeader">
+        <div class="PrimitiveTitle">
+          <base-heading theme="theme_subheaderSmall" >
+            <input readonly type="text" tabindex="-1" class="NodeId" :value="primitiveID" /> 
+          </base-heading>
           <input
             readonly
             type="text"
             tabindex="-1"
-            class="node-title"
+            class="NodeTitle"
             :value="nodeTitle.replace(/(<([^>]+)>)/gi, '')"
           />
         </div>
       </div>
-      <div class="properties-container">
-        <div class="property-list" ref="propertyList">
-          <div class="prop-header">
-            <div>
-              <p>{{ primitiveID }} properties:</p>
-            </div>
-            <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M13 13V19H11V13H5V11H11V5H13V11H19V13H13Z" />
-              </svg>
-            </div>
-          </div>
-          <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <!-- For scroll property name -->
-                  <input readonly tabindex="-1" type="text" :value="propName" />
-                </div>
-                <div class="prop-value">
-                  <span v-if="prop.status === 'complete'" v-text="prop.value" />
-                  <span v-else>
-                    <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
-                    <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
-                  </span>
-                </div>
-              </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deleteProperty(propName)"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path
-                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="card-content">
-              <select class="prop-type" v-model="prop.type">
-                <option
-                  v-for="option in propertyTypes"
-                  :value="
-                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
-                  "
-                  :key="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <button
-                v-if="prop.type === 'datasource'"
-                type="button"
-                class="otl-button"
-                @click="showModal(prop)"
-              >
-                Edit {{ prop.expression.type }}
-              </button>
-              <textarea
-                v-else
-                v-model="prop.expression"
-                rows="1"
-                class="prop-expression"
-                placeholder="Enter expression"
-              />
-            </div>
+
+      <base-expander open="true" class="AddNewProperty">
+        <div slot="summary" class="ExpanderTitle">Создать новое свойство</div>
+        <base-tabs>
+          <div slot="tab" tab-name="Свойство">
+            <base-input class="Input" label="Название" placeholder="Название свойства"></base-input>
+            <base-button
+              size="big"
+              width="full"
+            >Добавить свойство
+            </base-button>
           </div>
 
-          <div
-            v-for="(prop, propName) in addedPropertiesList"
-            :key="propName"
-            class="property-card"
+          <div slot="tab" tab-name="Порт">
+            <base-select 
+              class="Input" 
+              label="Тип порта" 
+              placeholder="Порт"
+            >
+              <div slot="item" value="InPort">InPort</div>
+              <div slot="item" value="OutPort">OutPort</div>
+              <div slot="item" value="InOutPort">InOutPort</div>
+            </base-select>
+            <base-button
+              size="big"
+              width="full"
+            >Добавить порт
+            </base-button>
+          </div>
+        </base-tabs>
+      </base-expander>
+      
+      <NoPrimitiveSelected v-if="!primitiveID" />
+      <div v-else>
+        <div class="SectionSearch">
+          <h2 class="SectionSearchTitle">Свойства и порты</h2>
+          <base-input 
+            type="search" 
+            placeholder="Поиск" 
+            size="small"
           >
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <input
-                    v-model="addedPropertiesList[propName].name"
-                    :ref="propName"
-                    class="editable"
-                    type="text"
-                    placeholder="Enter name..."
-                  />
-                </div>
-                <div class="prop-value">
-                  <div
-                    class="btn confirm-add-prop-btn"
-                    :class="{ disabled: addedPropertiesList[propName].name.length <= 0 }"
-                    title="Add property"
-                    @click="addPropertyToPrimitive(propName)"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24">
-                      <path
-                        d="M20.8388 6.69461L8.81799 18.7154L3.16113 13.0586L4.57113 11.6486L8.81799 15.8854L19.4288 5.28461L20.8388 6.69461Z"
-                      />
-                    </svg>
+          <span slot="icon-left" class="FontIcon name_searchSmall size_md"></span>
+          </base-input>
+        </div>
+        <div class="PropertiesWrapper">
+          <div class="PropertyList" ref="propertyList">
+            
+           <!-- <div v-for="(prop, propName) in propertyList" :key="propName" class="PropertyCard">
+              <div class="CardContent">
+                <div class="PropertyInfo">
+                  <div class="PropertyValue">
+                    <span v-if="prop.status === 'complete'" v-text="prop.value" />
+                    <span v-else>
+                      <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
+                      <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
+                    </span>
                   </div>
                 </div>
               </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deleteAddedProperty(propName)"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path
-                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="card-content">
-              <select class="prop-type" v-model="addedPropertiesList[propName].type">
-                <option
-                  v-for="option in propertyTypes"
-                  :key="option"
-                  :value="option"
-                  v-text="option.toUpperCase()"
+              <div class="card-content">
+                <button
+                  v-if="prop.type === 'datasource'"
+                  type="button"
+                  class="otl-button"
+                  @click="showModal(prop)"
+                >
+                  Edit {{ prop.expression.type }}
+                </button>
+                <textarea
+                  v-else
+                  v-model="prop.expression"
+                  rows="1"
+                  placeholder="Enter expression"
                 />
-              </select>
-              <textarea
-                class="prop-expression"
-                placeholder="Enter expression"
-                rows="1"
-                v-model="addedPropertiesList[propName].expression"
-              />
-            </div>
-          </div>
-          <div v-for="port in portList" :key="port" class="property-card">
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <input readonly tabindex="-1" type="text" :value="port.primitiveName" />
-                </div>
-                <div class="prop-value">
-                  <span
-                    v-if="port.properties.status.status === 'complete'"
-                    v-text="port.properties.status.value"
-                  />
-                  <span v-else>
-                    <StatusIcon
-                      v-if="port.properties.status.status === 'error'"
-                      :status="'error'"
-                    />
-                    <StatusIcon
-                      v-if="port.properties.status.status === 'inProgress'"
-                      :status="'inProgress'"
-                    />
-                  </span>
+              </div>
+            </div> -->
+
+            <div v-for="port in portList" :key="port" class="PropertyCard">
+              <div class="CardContent">
+                <div class="PropertyInfo">
+                  <div class="Test">
+                    <div>
+                      <input class="PropertyName" readonly tabindex="-1" type="text" :value="port.primitiveName" />
+                      <span class="PropertyType">Expression</span>
+                    </div>
+                    <div class="PropertyValue">
+                      <span class="ValueText">Value:</span>
+                      <span class="MainContent"
+                        v-if="port.properties.status.status === 'complete'"
+                        v-text="port.properties.status.value"
+                      />
+                      <span v-else>
+                        <StatusIcon
+                          v-if="port.properties.status.status === 'error'"
+                          :status="'error'"
+                        />
+                        <StatusIcon
+                          v-if="port.properties.status.status === 'inProgress'"
+                          :status="'inProgress'"
+                        />
+                      </span>
+                    </div>
+                  </div>
+                  <div class="IconsWrapper">
+                    <span class="FontIcon name_show size_lg"></span>
+                    <span  
+                      @click="showModal(port.properties.status)" 
+                      class="FontIcon name_edit size_lg"
+                    > 
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="card-content">
-              <!-- <label>{{ port.primitiveName }}</label> -->
-              <select class="prop-type" v-model="port.properties.status.type">
-                <option
-                  v-for="option in propertyTypes"
-                  :value="
-                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
-                  "
-                  :key="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <button
-                v-if="port.properties.status.type === 'datasource'"
-                type="button"
-                class="otl-button"
-                @click="showModal(port.properties.status)"
-              >
-                Edit OTL
-              </button>
-              <textarea
-                v-else
-                v-model="port.properties.status.expression"
-                rows="1"
-                class="prop-expression"
-                placeholder="Enter expression"
-              />
             </div>
           </div>
         </div>
@@ -216,11 +145,11 @@
 <script>
 import NoPrimitiveSelected from '@/components//NoPrimitiveSelected';
 import StatusIcon from '@/components/StatusIcon';
-import OTLModalWindow from '@/components/OTLModalWindow';
+import ElementSettings from '@/components/ElementSettings';
 
 export default {
   name: 'PrimitivePropertiesPanel',
-  components: { NoPrimitiveSelected, StatusIcon, OTLModalWindow },
+  components: { NoPrimitiveSelected, StatusIcon, ElementSettings },
   data: ({ $root }) => ({
     guid: $root.guid,
     logSystem: $root.logSystem,
@@ -389,227 +318,162 @@ export default {
 <style lang="scss" scoped>
 @import './../styles/base.scss';
 
-$panel-header-height: 60px;
-$c-blue: #2196f3;
-$c-red: #ef5350;
-$c-green: #4caf50;
-
-.panel-content {
+.PrimitivePropertiesPanel {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  position: relative;
+  color: var(--text_main);
+  background-color: var(--background_main);
 
-  .btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 35px;
-    height: 35px;
-    border: thin solid #757575;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: $transition-time;
 
-    .icon {
-      color: #757575;
-      font-size: 15px;
-    }
+  .PanelHeader {
+    background-color: var(--background_main);
+    border-bottom: 1px solid var(--background_secondary);
+    padding: 10px;
+    color: var(--title);
 
-    &.add-prop-btn {
-      border-color: $c-blue;
-
-      path {
-        fill: $c-blue;
-      }
-
-      &:hover {
-        background-color: $c-blue;
-
-        svg {
-          transform: rotate(180deg);
-        }
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.delete-prop-btn {
-      flex-shrink: 0;
-      border-color: $c-red;
-
-      path {
-        fill: $c-red;
-      }
-
-      &:hover {
-        background-color: $c-red;
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.confirm-add-prop-btn {
-      border-color: $c-green;
-
-      path {
-        fill: $c-green;
-      }
-
-      &:hover {
-        background-color: $c-green;
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.disabled {
-      pointer-events: none;
-      border-color: #959595;
-
-      path {
-        fill: #959595;
-      }
-    }
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: $panel-header-height;
-    background-color: #fff;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.25);
-    padding: 0 20px;
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    .primitive-info {
+    .PrimitiveTitle {
       display: flex;
       flex-direction: column;
       flex: 1 0;
+    }
 
-      > input {
-        border: none;
-        outline: none;
-        padding-right: 20px;
-      }
+    .NodeId {
+      width: 100%;
+      padding-bottom: 4px;
+      padding-right: 20px;
+    }
 
-      .node-id {
-        font-size: 15px;
-        font-family: monospace;
-      }
+    .NodeTitle {
+      font-size: 17px;
+      padding-right: 20px;
+      color: var(--title);
+    }
 
-      .node-title {
-        color: #656565;
-        font-size: 12px;
-        margin-top: 5px;
-      }
+    .NodeId,
+    .NodeTitle,
+    .PropertyName {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      border: none;
+      outline: none;
+      background-color: var(--background_main);
     }
   }
 
-  .properties-container {
-    margin-top: 60px;
+  .AddNewProperty {
+    padding: 10px 10px 30px;
+    border-bottom: 1px solid var(--border_secondary);
+  }
+
+  .ExpanderTitle {
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .Input {
+    padding-bottom: 30px;
+  }
+
+  .SectionSearch {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 24px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .SectionSearchTitle {
+    font-size: 17px;
+  }
+
+  .PropertiesWrapper {
     overflow-y: scroll;
   }
-  .property-list {
-    padding-bottom: 20px;
 
-    .prop-header {
+  .PropertyList {
+    padding: 0 10px 20px;
+
+    .PropertyCard {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      border-bottom: 2px solid var(--border_secondary);
+    }
+
+    .CardContent {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
     }
 
-    .section-title {
-      margin-top: 10px;
-      margin-left: 10px;
-    }
-
-    .property-card {
+    .PropertyInfo {
       display: flex;
-      flex-direction: column;
-      padding: 7px 20px;
+      width: 100%;
+      justify-content: space-between;
+    }
 
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .Test {
+      display: flex;
+      overflow: hidden;
+      margin-right: 20px;
+    }
 
-        .prop-info {
-          display: flex;
-          flex: 1 0;
+    .PropertyType {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text_secondary);
+      margin-top: 2px;
+    }
 
-          .prop-name {
-            display: flex;
-            flex: 1 0;
+    .PropertyName {
+      display: block;
+      cursor: default;
+      font-size: 17px;
+      font-weight: 700;  
+      max-width: 80px;
+      border: none;
+      outline: none;
+      color: var(--text_main);
+    }
 
-            > input {
-              display: block;
-              width: 100%;
-              cursor: default;
-              font-size: 15px;
-              font-family: monospace;
-              border: none;
-              outline: none;
+    .PropertyValue {
+      color: var(--text_secondary);
+      max-width: 80%;
+      font-size: 17px;
+      display: flex;
+      align-self: center;
+      overflow: hidden;
+    }
 
-              &.editable {
-                cursor: text;
-              }
-            }
-          }
+    .ValueText {
+      padding-right: 8px;
+    }
 
-          .prop-value {
-            max-width: 70%;
-            font-size: 15px;
-            padding: 0 20px;
-            margin-left: auto;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 5; /* number of lines to show */
-            line-clamp: 5;
-            -webkit-box-orient: vertical;
-          }
-        }
-      }
+    .MainContent {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    } 
 
-      .card-content {
-        display: flex;
-        align-items: start;
-        margin-top: 15px;
+    .IconsWrapper {
+      display: flex;
+      align-items: center;
+    }
+  }
 
-        $select-height: 20px;
+  .FontIcon {
+    cursor: pointer;
 
-        .prop-type {
-          display: block;
-          height: $select-height;
-          outline: none;
-        }
-        .otl-button {
-          min-width: 100px;
-          margin-left: 20px;
-        }
+    &.name_searchSmall {
+      color: var(--text_secondary);
+    }
 
-        .prop-expression {
-          flex: 1 0;
-          font-family: monospace;
-          min-height: $select-height;
-          max-height: 100px;
-          margin-left: 20px;
-          outline: none;
-          resize: vertical;
-        }
-      }
+    &.name_show {
+      padding-right: 20px;
     }
   }
 }
