@@ -1,7 +1,5 @@
 <template>
-  <span :key="status" :title="statuses[status].title" :style="{ color: statuses[status].color }">
-    <i :class="statuses[status].class" />
-  </span>
+  <span class="FontIcon" :class="statuses[status]"></span>
 </template>
 
 <script>
@@ -15,26 +13,15 @@ export default {
   },
   data: () => ({
     statuses: {
-      error: {
-        class: 'FontIcon name_error size_lg',
-      },
-      inProgress: {
-        class: 'FontIcon name_loader size_lg',
-        title: 'Загрузка данных',
-      },
-      successful: {
-        class: 'Success',
-        title: 'Новый элемент',
-      },
+      error: 'name_error size_lg',
+      inProgress: 'name_loader size_lg',
     },
   }),
 };
 </script>
 
 <style lang="scss" scoped>
-
 .FontIcon {
-  cursor: pointer;
 
   &.name_error {
     color: var(--danger);
@@ -48,16 +35,12 @@ export default {
     animation-timing-function: linear;
     transform-origin: 50% 50%;
     will-change: transform;
-  } 
-}
-
-.Success {
-  color: var(--success);
+  }
 }
 
 @keyframes loader {
-	100% {
-		transform: rotate(360deg);
-	}
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
