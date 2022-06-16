@@ -1,6 +1,6 @@
 # DTCD-PrimitivePropertiesPanel
 
-Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to compare some values with a target value.
+Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to manage the properties of primitives
 
 ## Getting Started
 
