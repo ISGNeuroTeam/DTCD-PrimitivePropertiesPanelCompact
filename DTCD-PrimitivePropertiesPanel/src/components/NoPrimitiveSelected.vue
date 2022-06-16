@@ -2,8 +2,7 @@
   <div class="NoPrimitiveSelected">
     <span class="FontIcon name_tableAdd Icon"></span>
     <slot>
-      Выберите примитив для отображения <br>
-      его свойств или портов
+      Выберите примитив для отображения
     </slot>
   </div>
 </template>

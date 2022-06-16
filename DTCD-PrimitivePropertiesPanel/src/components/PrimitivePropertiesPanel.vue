@@ -37,186 +37,185 @@
       </div>
     </div>
 
-    <base-expander open="true" class="AddNewProperty">
-      <div
-        slot="summary"
-        class="ExpanderTitle"
-        v-text="expanderTitle"
-      />
-      <base-tabs @select="tabSelectHandler">
-        <div slot="tab" tab-name="Свойство">
-          <base-input
-            ref="propName"
-            :value="addedPropName"
-            :disabled="!primitiveID"
-            class="Input"
-            label="Название"
-            placeholder="Название свойства"
-            @input="addedPropName = $event.target.value"
-          />
-          <base-button
-            size="big"
-            width="full"
-            :disabled="primitiveID && !isAddPropButtonDisabled"
-            @click="addPropertyToPrimitive"
-          >Добавить свойство</base-button>
-        </div>
-
-        <div slot="tab" tab-name="Порт">
-          <base-select
-            ref="portType"
-            class="Input PortTypeSelect"
-            label="Тип порта"
-            placeholder="Тип порта"
-            @input="addedPortType = $event.target.value"
-          >
-            <div
-              v-for="type in portTypes"
-              :key="type"
-              :value="type"
-              slot="item"
-              v-text="type"
-            />
-          </base-select>
-          <base-button
-            size="big"
-            width="full"
-            disabled
-          >Добавить порт</base-button>
-        </div>
-      </base-tabs>
-    </base-expander>
-
     <NoPrimitiveSelected v-if="!primitiveID"/>
 
-    <div v-show="primitiveID" class="SelectedPrimitiveData">
-      <div class="SectionSearch">
-        <h2
-          class="SectionSearchTitle"
-          v-text="selectedTab === 0 ? 'Свойства' : 'Порты'"
-        />
+    <template v-else>
+      <base-tabs class="TabContainer" @select="tabSelectHandler">
+        <div slot="tab" tab-name="Свойства"></div>
+        <div slot="tab" tab-name="Порты"></div>
+      </base-tabs>
+
+      <base-expander v-show="selectedTab === 0" open="true" class="Expander">
+        <div slot="summary" class="ExpanderTitle">Создать новое свойство</div>
         <base-input
-          type="search"
-          placeholder="Поиск"
-          size="small"
-          @input="searchString = $event.target.value"
+          ref="propName"
+          :value="addedPropName"
+          :disabled="!primitiveID"
+          class="Input"
+          label="Название"
+          placeholder="Название свойства"
+          @input="addedPropName = $event.target.value"
+        />
+        <base-button
+          size="big"
+          width="full"
+          :disabled="primitiveID && !isAddPropButtonDisabled"
+          @click="addPropertyToPrimitive"
         >
-          <span slot="icon-left" class="FontIcon name_searchSmall size_md Icon"></span>
-        </base-input>
-      </div>
+          Добавить свойство
+        </base-button>
+      </base-expander>
 
-      <div v-show="selectedTab === 0" class="PropertyList">
-        <div
-          v-for="(prop, propName) in propertyList"
-          :key="propName"
-          class="PropertyCard"
-          v-show="propName.toLowerCase().includes(searchString.toLowerCase())"
+      <!-- NOT USED NOW -->
+      <base-expander v-show="false" open="true" class="Expander">
+        <div slot="summary" class="ExpanderTitle">Создать новый порт</div>
+        <base-select
+          ref="portType"
+          class="Input PortTypeSelect"
+          label="Тип порта"
+          placeholder="Тип порта"
+          @input="addedPortType = $event.target.value"
         >
-          <div class="PropertyDataWrapper">
-            <div>
-              <input
-                class="PropertyName"
-                readonly
-                tabindex="-1"
-                type="text"
-                :value="propName"
-              />
-              <span class="PropertyType" v-text="getPropType(prop, 'property')"/>
+          <div
+            v-for="type in portTypes"
+            :key="type"
+            :value="type"
+            slot="item"
+            v-text="type"
+          />
+        </base-select>
+        <base-button disabled size="big" width="full">Добавить порт</base-button>
+      </base-expander>
+
+      <div class="SelectedPrimitiveData" key="SelectedPrimitiveData">
+        <div class="SectionSearch">
+          <h2
+            class="SectionSearchTitle"
+            v-text="selectedTab === 0 ? 'Свойства' : 'Порты'"
+          />
+          <base-input
+            type="search"
+            placeholder="Поиск"
+            size="small"
+            @input="searchString = $event.target.value"
+          >
+            <span slot="icon-left" class="FontIcon name_searchSmall size_md Icon"></span>
+          </base-input>
+        </div>
+
+        <div v-if="selectedTab === 0" class="PropertyList">
+          <div
+            v-for="(prop, propName) in propertyList"
+            :key="propName"
+            class="PropertyCard"
+            v-show="propName.toLowerCase().includes(searchString.toLowerCase())"
+          >
+            <div class="PropertyDataWrapper">
+              <div>
+                <input
+                  class="PropertyName"
+                  readonly
+                  tabindex="-1"
+                  type="text"
+                  :value="propName"
+                />
+                <span class="PropertyType" v-text="getPropType(prop, 'property')"/>
+              </div>
+              <div class="PropertyValue">
+                <span class="ValueText" :class="{ error:  prop.status === 'error' }">
+                  Value:
+                </span>
+                <span
+                  v-if="prop.status === 'complete'"
+                  class="ValueData"
+                  v-text="prop.value"
+                />
+                <span
+                  v-if="prop.status === 'error'"
+                  class="ValueData error"
+                >
+                  <StatusIcon class="StatusIcon" :status="'error'"/>
+                  Ошибка
+                </span>
+                <span
+                  v-if="prop.status === 'inProgress'"
+                  class="ValueData progress"
+                >
+                  <StatusIcon class="StatusIcon" :status="'inProgress'"/>
+                  Загрузка данных
+                </span>
+              </div>
             </div>
-            <div class="PropertyValue">
-              <span class="ValueText" :class="{ error:  prop.status === 'error' }">
-                Value:
-              </span>
+            <div class="IconsWrapper">
               <span
-                v-if="prop.status === 'complete'"
-                class="ValueData"
-                v-text="prop.value"
+                class="FontIcon name_show size_lg ShowIcon"
+                @click="openPropFullValue(propName, prop.value)"
               />
               <span
-                v-if="prop.status === 'error'"
-                class="ValueData error"
-              >
-                <StatusIcon class="StatusIcon" :status="'error'"/>
-                Ошибка
-              </span>
-              <span
-                v-if="prop.status === 'inProgress'"
-                class="ValueData progress"
-              >
-                <StatusIcon class="StatusIcon" :status="'inProgress'"/>
-                Загрузка данных
-              </span>
+                class="FontIcon name_edit size_lg"
+                @click="openPropSettings(propName, prop)"
+              />
             </div>
           </div>
-          <div class="IconsWrapper">
-            <span
-              class="FontIcon name_show size_lg ShowIcon"
-              @click="openPropFullValue(propName, prop.value)"
-            />
-            <span
-              class="FontIcon name_edit size_lg"
-              @click="openPropSettings(propName, prop)"
-            />
+        </div>
+
+        <div v-if="selectedTab === 1" class="PropertyList">
+          <div
+            v-for="port in portList"
+            :key="port"
+            class="PropertyCard"
+            v-show="port.primitiveName.toLowerCase().includes(searchString.toLowerCase())"
+          >
+            <div class="PropertyDataWrapper">
+              <div>
+                <input
+                  class="PropertyName"
+                  readonly
+                  tabindex="-1"
+                  type="text"
+                  :value="port.primitiveName"
+                />
+                <span class="PropertyType" v-text="getPropType(port, 'port')"/>
+              </div>
+              <div class="PropertyValue">
+                <span class="ValueText" :class="{ error: port.properties.status.status === 'error' }">
+                  Value:
+                </span>
+                <span
+                  v-if="port.properties.status.status === 'complete'"
+                  class="ValueData"
+                  v-text="port.properties.status.value"
+                />
+                <span
+                  v-if="port.properties.status.status === 'error'"
+                  class="ValueData error"
+                >
+                  <StatusIcon class="StatusIcon" :status="'error'"/>
+                  Ошибка
+                </span>
+                <span
+                  v-if="port.properties.status.status === 'inProgress'"
+                  class="ValueData progress"
+                >
+                  <StatusIcon class="StatusIcon" :status="'inProgress'"/>
+                  Загрузка данных
+                </span>
+              </div>
+            </div>
+            <div class="IconsWrapper">
+              <span
+                class="FontIcon name_show size_lg ShowIcon"
+                @click="openPropFullValue(port.primitiveName, port.properties.status.value)"
+              />
+              <span
+                class="FontIcon name_edit size_lg"
+                @click="openPropSettings(port.primitiveName, port.properties.status, 'port')"
+              />
+            </div>
           </div>
         </div>
       </div>
-
-      <div v-show="selectedTab === 1" class="PropertyList">
-        <div
-          v-for="port in portList"
-          :key="port"
-          class="PropertyCard"
-          v-show="port.primitiveName.toLowerCase().includes(searchString.toLowerCase())"
-        >
-          <div class="PropertyDataWrapper">
-            <div>
-              <input
-                class="PropertyName"
-                readonly
-                tabindex="-1"
-                type="text"
-                :value="port.primitiveName"
-              />
-              <span class="PropertyType" v-text="getPropType(port, 'port')"/>
-            </div>
-            <div class="PropertyValue">
-              <span class="ValueText" :class="{ error: port.properties.status.status === 'error' }">
-                Value:
-              </span>
-              <span
-                v-if="port.properties.status.status === 'complete'"
-                class="ValueData"
-                v-text="port.properties.status.value"
-              />
-              <span
-                v-if="port.properties.status.status === 'error'"
-                class="ValueData error"
-              >
-                <StatusIcon class="StatusIcon" :status="'error'"/>
-                Ошибка
-              </span>
-              <span
-                v-if="port.properties.status.status === 'inProgress'"
-                class="ValueData progress"
-              >
-                <StatusIcon class="StatusIcon" :status="'inProgress'"/>
-                Загрузка данных
-              </span>
-            </div>
-          </div>
-          <div class="IconsWrapper">
-            <span
-              class="FontIcon name_show size_lg ShowIcon"
-              @click="openPropFullValue(port.primitiveName, port.properties.status.value)"
-            />
-            <span
-              class="FontIcon name_edit size_lg"
-              @click="openPropSettings(port.primitiveName, port.properties.status, 'port')"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -265,8 +264,15 @@ export default {
       return Object.keys(this.propertyList);
     },
   },
-  mounted() {
-    this.$refs.propName.validation = val => this.validateAddedPropName(val);
+  watch: {
+    primitiveID() {
+      this.$nextTick(() => {
+        const { propName } = this.$refs;
+        if (typeof propName.validation !== 'function') {
+          propName.validation = v => this.validateAddedPropName(v);
+        }
+      });
+    },
   },
   methods: {
     tabSelectHandler(event) {
@@ -442,8 +448,12 @@ export default {
     }
   }
 
-  .AddNewProperty {
-    padding: 10px 10px 30px;
+  .TabContainer {
+    padding: 10px 10px 0;
+  }
+
+  .Expander {
+    padding: 10px 14px 30px;
     border-bottom: 1px solid var(--border_secondary);
   }
 
@@ -453,7 +463,8 @@ export default {
   }
 
   .Input {
-    margin-bottom: 30px;
+    margin-top: 10px;
+    margin-bottom: 20px;
 
     &.PortTypeSelect > [slot="item"] {
       padding: 6px 12px;
@@ -468,7 +479,7 @@ export default {
     .SectionSearch {
       display: flex;
       justify-content: space-between;
-      padding: 12px 24px;
+      padding: 12px 22px;
       align-items: center;
       border-bottom: 1px solid var(--border_secondary);
 
