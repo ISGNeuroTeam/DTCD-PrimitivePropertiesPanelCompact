@@ -109,6 +109,9 @@
               <div class="PropertyValue">
                 <span class="ValueText" :class="{ error: prop.status === 'error' }"> Value: </span>
                 <span v-if="prop.status === 'complete'" class="ValueData" v-text="prop.value" />
+                <span v-if="prop.status === 'new'" class="ValueData new">
+                  Новое свойство
+                </span>
                 <span v-if="prop.status === 'error'" class="ValueData error">
                   <StatusIcon class="StatusIcon" :status="'error'" />
                   Ошибка
@@ -335,7 +338,7 @@ export default {
         this.$set(this.propertyList, name, {
           type: 'expression',
           expression: '',
-          status: 'completed',
+          status: 'new',
           value: '',
         });
         this.logSystem.debug(`Adding "${name}" property to the ${this.primitiveID} node`);
@@ -539,10 +542,17 @@ export default {
               overflow: hidden;
               white-space: nowrap;
 
-              &.error {
-                color: var(--danger);
+              &.new, &.error {
                 font-size: 15px;
                 font-weight: 700;
+              }
+
+              &.new {
+                color: var(--success);
+              }
+
+              &.error {
+                color: var(--danger);
               }
 
               &.progress {
