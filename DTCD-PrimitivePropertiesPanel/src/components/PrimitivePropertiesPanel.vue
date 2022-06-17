@@ -16,7 +16,7 @@
 
     <div class="PanelHeader">
       <div class="PrimitiveTitle">
-        <base-heading theme="theme_subheaderSmall" >
+        <base-heading theme="theme_subheaderSmall">
           <input
             class="NodeId"
             readonly
@@ -37,7 +37,7 @@
       </div>
     </div>
 
-    <NoPrimitiveSelected v-if="!primitiveID"/>
+    <NoPrimitiveSelected v-if="!primitiveID" />
 
     <template v-else>
       <base-tabs class="TabContainer" @select="tabSelectHandler">
@@ -76,23 +76,14 @@
           placeholder="Тип порта"
           @input="addedPortType = $event.target.value"
         >
-          <div
-            v-for="type in portTypes"
-            :key="type"
-            :value="type"
-            slot="item"
-            v-text="type"
-          />
+          <div v-for="type in portTypes" :key="type" :value="type" slot="item" v-text="type" />
         </base-select>
         <base-button disabled size="big" width="full">Добавить порт</base-button>
       </base-expander>
 
       <div class="SelectedPrimitiveData" key="SelectedPrimitiveData">
         <div class="SectionSearch">
-          <h2
-            class="SectionSearchTitle"
-            v-text="selectedTab === 0 ? 'Свойства' : 'Порты'"
-          />
+          <h2 class="SectionSearchTitle" v-text="selectedTab === 0 ? 'Свойства' : 'Порты'" />
           <base-input
             type="search"
             placeholder="Поиск"
@@ -106,42 +97,27 @@
         <div v-if="selectedTab === 0" class="PropertyList">
           <div
             v-for="(prop, propName) in propertyList"
-            :key="propName"
+            :key="propName + prop.status"
             class="PropertyCard"
             v-show="propName.toLowerCase().includes(searchString.toLowerCase())"
           >
             <div class="PropertyDataWrapper">
               <div>
-                <input
-                  class="PropertyName"
-                  readonly
-                  tabindex="-1"
-                  type="text"
-                  :value="propName"
-                />
-                <span class="PropertyType" v-text="getPropType(prop, 'property')"/>
+                <input class="PropertyName" readonly tabindex="-1" type="text" :value="propName" />
+                <span class="PropertyType" v-text="getPropType(prop, 'property')" />
               </div>
               <div class="PropertyValue">
-                <span class="ValueText" :class="{ error:  prop.status === 'error' }">
-                  Value:
+                <span class="ValueText" :class="{ error: prop.status === 'error' }"> Value: </span>
+                <span v-if="prop.status === 'complete'" class="ValueData" v-text="prop.value" />
+                <span v-if="prop.status === 'new'" class="ValueData new">
+                  Новое свойство
                 </span>
-                <span
-                  v-if="prop.status === 'complete'"
-                  class="ValueData"
-                  v-text="prop.value"
-                />
-                <span
-                  v-if="prop.status === 'error'"
-                  class="ValueData error"
-                >
-                  <StatusIcon class="StatusIcon" :status="'error'"/>
+                <span v-if="prop.status === 'error'" class="ValueData error">
+                  <StatusIcon class="StatusIcon" :status="'error'" />
                   Ошибка
                 </span>
-                <span
-                  v-if="prop.status === 'inProgress'"
-                  class="ValueData progress"
-                >
-                  <StatusIcon class="StatusIcon" :status="'inProgress'"/>
+                <span v-if="prop.status === 'inProgress'" class="ValueData progress">
+                  <StatusIcon class="StatusIcon" :status="'inProgress'" />
                   Загрузка данных
                 </span>
               </div>
@@ -151,10 +127,7 @@
                 class="FontIcon name_show size_lg ShowIcon"
                 @click="openPropFullValue(propName, prop.value)"
               />
-              <span
-                class="FontIcon name_edit size_lg"
-                @click="openPropSettings(propName, prop)"
-              />
+              <span class="FontIcon name_edit size_lg" @click="openPropSettings(propName, prop)" />
             </div>
           </div>
         </div>
@@ -175,10 +148,13 @@
                   type="text"
                   :value="port.primitiveName"
                 />
-                <span class="PropertyType" v-text="getPropType(port, 'port')"/>
+                <span class="PropertyType" v-text="getPropType(port, 'port')" />
               </div>
               <div class="PropertyValue">
-                <span class="ValueText" :class="{ error: port.properties.status.status === 'error' }">
+                <span
+                  class="ValueText"
+                  :class="{ error: port.properties.status.status === 'error' }"
+                >
                   Value:
                 </span>
                 <span
@@ -186,18 +162,15 @@
                   class="ValueData"
                   v-text="port.properties.status.value"
                 />
-                <span
-                  v-if="port.properties.status.status === 'error'"
-                  class="ValueData error"
-                >
-                  <StatusIcon class="StatusIcon" :status="'error'"/>
+                <span v-if="port.properties.status.status === 'error'" class="ValueData error">
+                  <StatusIcon class="StatusIcon" :status="'error'" />
                   Ошибка
                 </span>
                 <span
                   v-if="port.properties.status.status === 'inProgress'"
                   class="ValueData progress"
                 >
-                  <StatusIcon class="StatusIcon" :status="'inProgress'"/>
+                  <StatusIcon class="StatusIcon" :status="'inProgress'" />
                   Загрузка данных
                 </span>
               </div>
@@ -251,7 +224,7 @@ export default {
   }),
   computed: {
     expanderTitle() {
-      const titles = ['новое свойство', 'новый порт']
+      const titles = ['новое свойство', 'новый порт'];
       return `Создать ${titles[this.selectedTab]}`;
     },
 
@@ -329,6 +302,7 @@ export default {
     processPrimitiveEvent(event = {}) {
       this.logSystem.debug(`Start propcessing BroadcastPrimitiveInfo event`);
 
+      this.propertyList = {};
       const { primitiveTag = {}, ports = [] } = event;
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitiveTag;
 
@@ -361,7 +335,12 @@ export default {
       const name = this.addedPropName;
       this.addedPropName = '';
       if (!this.existedProps.includes(name)) {
-        this.$set(this.propertyList, name, { type: 'expression', expression: '' });
+        this.$set(this.propertyList, name, {
+          type: 'expression',
+          expression: '',
+          status: 'new',
+          value: '',
+        });
         this.logSystem.debug(`Adding "${name}" property to the ${this.primitiveID} node`);
         this.logSystem.info(`Adding "${name}" property to the ${this.primitiveID} node`);
       }
@@ -372,7 +351,9 @@ export default {
       const { type, expression } = data;
 
       if (propType === 'property') {
-        this.$set(this.propertyList, propName, { type, expression });
+        this.$set(this.propertyList[propName], 'type', type);
+        this.$set(this.propertyList[propName], 'expression', expression);
+        // this.$set(this.propertyList, propName, { type, expression });
         this.logSystem.debug(`Updating "${propName}" property of the ${this.primitiveID} node`);
         this.logSystem.info(`Updating "${propName}" property of the ${this.primitiveID} node`);
       }
@@ -466,7 +447,7 @@ export default {
     margin-top: 10px;
     margin-bottom: 20px;
 
-    &.PortTypeSelect > [slot="item"] {
+    &.PortTypeSelect > [slot='item'] {
       padding: 6px 12px;
     }
   }
@@ -561,10 +542,17 @@ export default {
               overflow: hidden;
               white-space: nowrap;
 
-              &.error {
-                color: var(--danger);
+              &.new, &.error {
                 font-size: 15px;
                 font-weight: 700;
+              }
+
+              &.new {
+                color: var(--success);
+              }
+
+              &.error {
+                color: var(--danger);
               }
 
               &.progress {
