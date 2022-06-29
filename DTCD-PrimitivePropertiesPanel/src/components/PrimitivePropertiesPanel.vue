@@ -109,9 +109,7 @@
               <div class="PropertyValue">
                 <span class="ValueText" :class="{ error: prop.status === 'error' }"> Value: </span>
                 <span v-if="prop.status === 'complete'" class="ValueData" v-text="prop.value" />
-                <span v-if="prop.status === 'new'" class="ValueData new">
-                  Новое свойство
-                </span>
+                <span v-if="prop.status === 'new'" class="ValueData new"> Новое свойство </span>
                 <span v-if="prop.status === 'error'" class="ValueData error">
                   <StatusIcon class="StatusIcon" :status="'error'" />
                   Ошибка
@@ -306,13 +304,6 @@ export default {
       const { primitiveTag = {}, ports = [] } = event;
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitiveTag;
 
-      for (const prop in properties) {
-        if (properties.hasOwnProperty(prop)) {
-          if (!properties[prop].type) properties[prop].type = 'expression';
-          if (!properties[prop].expression) properties[prop].expression = '';
-        }
-      }
-
       this.portList = ports;
       this.primitiveID = primitiveID;
       this.nodeTitle = nodeTitle;
@@ -348,12 +339,12 @@ export default {
 
     updateProp(propData) {
       const { propName, propType, data } = propData;
-      const { type, expression } = data;
+      const { type, expression, input } = data;
 
       if (propType === 'property') {
         this.$set(this.propertyList[propName], 'type', type);
         this.$set(this.propertyList[propName], 'expression', expression);
-        // this.$set(this.propertyList, propName, { type, expression });
+        this.$set(this.propertyList[propName], 'input', input);
         this.logSystem.debug(`Updating "${propName}" property of the ${this.primitiveID} node`);
         this.logSystem.info(`Updating "${propName}" property of the ${this.primitiveID} node`);
       }
@@ -361,7 +352,7 @@ export default {
       if (propType === 'port') {
         const port = this.portList.find(p => p.primitiveName === propName);
         const { properties } = this.portList[this.portList.indexOf(port)];
-        this.$set(properties, 'status', { type, expression });
+        this.$set(properties, 'status', { type, expression, input });
         this.logSystem.debug(`Updating "${propName}" port of the ${this.primitiveID} node`);
         this.logSystem.info(`Updating "${propName}" port of the ${this.primitiveID} node`);
       }
@@ -542,7 +533,8 @@ export default {
               overflow: hidden;
               white-space: nowrap;
 
-              &.new, &.error {
+              &.new,
+              &.error {
                 font-size: 15px;
                 font-weight: 700;
               }

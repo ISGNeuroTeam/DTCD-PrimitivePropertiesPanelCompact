@@ -1,14 +1,8 @@
 <template>
   <div class="ElementSettings">
     <header class="ElementSettingsHeader">
-      <base-heading theme="theme_subheaderSmall" >
-        <input
-          :value="propData.propName"
-          class="PropName"
-          readonly
-          type="text"
-          tabindex="-1"
-        />
+      <base-heading theme="theme_subheaderSmall">
+        <input :value="propData.propName" class="PropName" readonly type="text" tabindex="-1" />
       </base-heading>
     </header>
 
@@ -37,44 +31,79 @@
         </div>
       </div>
 
-      <div v-if="propType === 'OTL'" class="BodyRow Col-3">
+      <div v-if="propType === 'expression'" class="BodyRow">
         <div class="RowItem">
-          <base-input
-            :value="paramsOTL.cache_ttl"
+          <base-select
+            ref="inputTypeSelector"
+            :value="component"
             class="FormField"
-            type="number"
-            label="TTL"
-            @input="paramsOTL.cache_ttl = $event.target.value"
-          />
-        </div>
-        <div class="RowItem">
-          <date-time-picker
-            :value="paramsOTL.tws"
-            class="FormField DateTimePicker"
-            label="TWS"
-            @input="paramsOTL.tws = $event.target.value"
-          />
-        </div>
-        <div class="RowItem">
-          <date-time-picker
-            :value="paramsOTL.twf"
-            class="FormField DateTimePicker"
-            label="TWF"
-            visible="false"
-            @input="paramsOTL.twf = $event.target.value"
-          />
+            label="Тип поля ввода"
+          >
+            <div
+              v-for="type in inputTypes"
+              :key="type.input"
+              slot="item"
+              :value="type.input"
+              v-text="type.input"
+            />
+          </base-select>
         </div>
       </div>
 
-      <div class="BodyRow">
-        <div class="RowItem">
-          <base-textarea
-            :value="expression"
-            class="FormField"
-            label="Запрос"
-            placeholder="Введите запрос"
-            @input="expression = $event.target.value"
-          />
+      <div v-if="propType === 'expression'" class="BodyRow">
+        <div ref="inputElement" class="RowItem"></div>
+      </div>
+
+      <span v-if="loaderVisible" class="ValueData progress">
+        <StatusIcon class="StatusIcon" :status="'inProgress'" />
+        Загрузка данных
+      </span>
+
+      <span v-if="datasourceError" class="ValueData error">
+        <StatusIcon class="StatusIcon" :status="'error'" />
+        Ошибка при выполнении запроса
+      </span>
+
+      <div v-if="propType === 'OTL'">
+        <div class="BodyRow Col-3">
+          <div class="RowItem">
+            <base-input
+              :value="paramsOTL.cache_ttl"
+              class="FormField"
+              type="number"
+              label="TTL"
+              @input="paramsOTL.cache_ttl = $event.target.value"
+            />
+          </div>
+          <div class="RowItem">
+            <date-time-picker
+              :value="paramsOTL.tws"
+              class="FormField DateTimePicker"
+              label="TWS"
+              @input="paramsOTL.tws = $event.target.value"
+            />
+          </div>
+          <div class="RowItem">
+            <date-time-picker
+              :value="paramsOTL.twf"
+              class="FormField DateTimePicker"
+              label="TWF"
+              visible="false"
+              @input="paramsOTL.twf = $event.target.value"
+            />
+          </div>
+        </div>
+
+        <div class="BodyRow">
+          <div class="RowItem">
+            <base-textarea
+              :value="expression"
+              class="FormField"
+              label="Запрос"
+              placeholder="Введите запрос"
+              @input="expression = $event.target.value"
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -89,29 +118,37 @@
       >
         <span class="FontIcon name_trashFull size_lg"></span>
       </base-icon-button>
-      <base-button
-        size="big"
-        theme="theme_secondary"
-        @click="close"
-      >Отменить</base-button>
-      <base-button
-        size="big"
-        @click="save"
-      >Сохранить</base-button>
+      <base-button size="big" theme="theme_secondary" @click="close">Отменить</base-button>
+      <base-button size="big" @click="save">Сохранить</base-button>
     </footer>
   </div>
 </template>
 
 <script>
+import StatusIcon from '@/components/StatusIcon';
+
 export default {
   name: 'ElementSettings',
   props: {
     propData: Object,
   },
-  data() {
+  components: {
+    StatusIcon,
+  },
+  data({ $root }) {
     return {
-      propType: '',
+      datasourceSystem: $root.dataSourceSystem,
+      propType: 'expression',
       expression: '',
+      component: 'textarea',
+      componentValues: [],
+      inputDataType: 'const',
+      inputDataTypes: ['const', 'datasource'],
+      loaderVisible: false,
+      datasourceError: false,
+      columnName: '',
+      requestString: '',
+      element: null,
       paramsOTL: {
         type: 'OTL',
         tws: 0,
@@ -123,9 +160,14 @@ export default {
         { name: 'expression', title: 'Expression' },
         { name: 'OTL', title: 'OTL' },
       ],
+      inputTypes: [
+        { input: 'textarea', componentName: 'base-textarea' },
+        { input: 'select', componentName: 'base-select' },
+        { input: 'switch', componentName: 'base-switch' },
+      ],
     };
   },
-  mounted() {
+  async mounted() {
     const { type, expression } = this.propData.data;
     const dateNow = Number(new Date());
 
@@ -133,6 +175,22 @@ export default {
     this.expression = expression;
     this.paramsOTL.tws = dateNow;
     this.paramsOTL.twf = dateNow;
+
+    const {
+      component = 'textarea',
+      type: inputDataType = 'const',
+      values = [],
+      datasource = {},
+      columnName = '',
+    } = this.propData.data.input ? this.propData.data.input : {};
+
+    const { original_otl = '' } = datasource;
+
+    this.component = component;
+    this.inputDataType = inputDataType;
+    this.componentValues = values;
+    this.requestString = original_otl;
+    this.columnName = columnName;
 
     if (type === 'datasource' && typeof expression === 'object') {
       if (expression.type === 'OTL') {
@@ -144,6 +202,10 @@ export default {
         this.paramsOTL.cache_ttl = cache_ttl;
       }
     }
+    await this.renderElement();
+    this.$refs['inputTypeSelector'].addEventListener('input', e => {
+      this.changeInputType(e);
+    });
   },
   methods: {
     close() {
@@ -153,22 +215,37 @@ export default {
     save() {
       const { propName, propType } = this.propData;
 
-      const type = this.propType === 'expression'
-        ? 'expression'
-        : 'datasource';
+      const type = this.propType === 'expression' ? 'expression' : 'datasource';
 
       this.paramsOTL.tws = Math.floor(this.paramsOTL.tws / 1000);
       this.paramsOTL.twf = Math.floor(this.paramsOTL.twf / 1000);
       this.paramsOTL.original_otl = this.expression.trim();
 
-      const expression = this.propType === 'expression'
-        ? this.expression
-        : { ...this.paramsOTL };
+      const expression = this.propType === 'expression' ? this.expression : { ...this.paramsOTL };
+      let input = { component: this.component };
+
+      if (this.component === 'select') {
+        if (this.inputDataType === 'datasource')
+          input = {
+            ...input,
+            type: this.inputDataType,
+            values: this.componentValues,
+            columnName: this.columnName,
+            datasource: { original_otl: this.requestString },
+          };
+        else {
+          input = {
+            ...input,
+            type: this.inputDataType,
+            values: this.componentValues,
+          };
+        }
+      }
 
       this.$emit('save', {
         propName,
         propType,
-        data: { type, expression }
+        data: { type, expression, input },
       });
 
       this.close();
@@ -179,6 +256,187 @@ export default {
       this.$emit('delete', { propName, propType });
       this.close();
     },
+
+    changeInputType(event) {
+      this.component = event.target.value;
+      this.renderElement();
+    },
+
+    resetValues() {
+      this.componentValues = [];
+      this.columnName = '';
+      this.requestString = '';
+      this.expression = '';
+    },
+
+    async renderElement() {
+      this.$refs['inputElement'].innerHTML = '';
+
+      this.element = document.createElement(`base-${this.component}`);
+      this.element.setAttribute('label', 'Значение');
+
+      switch (this.component) {
+        case 'textarea':
+          this.element.value = this.expression;
+          this.element.addEventListener('change', e => {
+            this.expression = e.target.value;
+          });
+          this.$refs['inputElement'].appendChild(this.element);
+          break;
+
+        case 'select':
+          this.element.value = this.expression.replace(/(^'|'$)/g, '');
+
+          const typeSelector = document.createElement('base-select');
+
+          this.inputDataTypes.forEach(type => {
+            const typeOption = this._createOption(type, type);
+            typeSelector.appendChild(typeOption);
+          });
+
+          typeSelector.value = this.inputDataType;
+          typeSelector.setAttribute('label', 'Тип данных');
+
+          this.$refs['inputElement'].appendChild(typeSelector);
+
+          typeSelector.addEventListener('input', e => {
+            this.resetValues();
+            this.inputDataType = e.target.value;
+            this.renderElement();
+          });
+
+          if (this.inputDataType === 'const') {
+            const valueInput = document.createElement('base-input');
+            valueInput.value = this.componentValues.join(',');
+            valueInput.setAttribute('label', 'Значения в списке (через ,)');
+            valueInput.addEventListener('change', e => {
+              const inputValues = e.target.value.split(',');
+              this.componentValues = inputValues;
+              this.element.innerHTML = '';
+              this.element.setAttribute('label', 'Значение');
+              inputValues.forEach(value => {
+                const valueOption = this._createOption(value, value);
+                this.element.appendChild(valueOption);
+              });
+            });
+
+            this.$refs['inputElement'].appendChild(valueInput);
+
+            this.componentValues.forEach(value => {
+              const valueOption = this._createOption(value, value);
+              this.element.appendChild(valueOption);
+            });
+            this.$refs['inputElement'].appendChild(this.element);
+          } else if (this.inputDataType === 'datasource') {
+            const requestAreaElement = document.createElement('base-textarea');
+            requestAreaElement.label = 'Текст запроса';
+            requestAreaElement.value = this.requestString;
+            requestAreaElement.addEventListener('change', e => {
+              this.requestString = e.target.value;
+            });
+            this.$refs['inputElement'].appendChild(requestAreaElement);
+
+            const playButton = document.createElement('base-button');
+            playButton.innerHTML = 'Запустить';
+            playButton.addEventListener('click', async () => {
+              this.columnName = '';
+              this.loaderVisible = true;
+              try {
+                await this._runDatasource();
+              } catch (err) {
+                this.datasourceError = true;
+              } finally {
+                this.loaderVisible = false;
+                this.renderElement();
+              }
+            });
+            this.$refs['inputElement'].appendChild(playButton);
+
+            if (this.requestString !== '') {
+              if (this.componentValues.length < 1) {
+                try {
+                  this.loaderVisible = true;
+                  await this._runDatasource();
+                } catch (err) {
+                  this.datasourceError = true;
+                } finally {
+                  this.loaderVisible = false;
+                }
+              }
+              this._fillColumns();
+            }
+          }
+
+          this.element.value = this.expression.replace(/(^'|'$)/g, '');
+
+          this.element.addEventListener('change', e => {
+            this.expression = `'${e.target.value}'`;
+          });
+          break;
+
+        case 'switch':
+          this.element.value = this.expression === 'true' ? true : false;
+          this.element.addEventListener('change', e => {
+            this.expression = `${e.target.value}`;
+          });
+          this.$refs['inputElement'].appendChild(this.element);
+          break;
+        default:
+          break;
+      }
+    },
+
+    async _runDatasource() {
+      let result = await this.datasourceSystem.oneShotRun('otl', {
+        queryString: this.requestString,
+      });
+      this.componentValues = result;
+    },
+
+    _fillColumns() {
+      try {
+        const columnSelect = document.createElement(`base-select`);
+        columnSelect.setAttribute('label', 'Имя колонки');
+
+        Object.keys(this.componentValues[0]).forEach(columnName => {
+          const columnOption = this._createOption(columnName, columnName);
+          columnSelect.appendChild(columnOption);
+        });
+
+        columnSelect.addEventListener('change', () => {
+          this.element.value = '';
+          this.element.innerHTML = '';
+          this.element.setAttribute('label', 'Значение');
+          this.componentValues.forEach(value => {
+            const valueOption = this._createOption(
+              value[columnSelect.value].toString(),
+              value[columnSelect.value].toString()
+            );
+            this.element.appendChild(valueOption);
+          });
+          this.$refs['inputElement'].appendChild(this.element);
+        });
+
+        this.loaderVisible = false;
+
+        this.$refs['inputElement'].appendChild(columnSelect);
+
+        if (this.columnName) {
+          columnSelect.value = this.columnName;
+          this.$refs['inputElement'].appendChild(this.element);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    _createOption(value, text) {
+      const option = document.createElement('div');
+      option.setAttribute('slot', 'item');
+      option.setAttribute('value', value);
+      option.innerHTML = text;
+      return option;
+    },
   },
 };
 </script>
@@ -186,7 +444,7 @@ export default {
 <style lang="scss" scoped>
 .ElementSettings {
   display: flex;
-  flex-direction: column;;
+  flex-direction: column;
   min-height: 100%;
   color: var(--text_main);
   font-family: 'Proxima Nova';
