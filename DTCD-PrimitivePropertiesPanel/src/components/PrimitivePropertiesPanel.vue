@@ -109,9 +109,7 @@
               <div class="PropertyValue">
                 <span class="ValueText" :class="{ error: prop.status === 'error' }"> Value: </span>
                 <span v-if="prop.status === 'complete'" class="ValueData" v-text="prop.value" />
-                <span v-if="prop.status === 'new'" class="ValueData new">
-                  Новое свойство
-                </span>
+                <span v-if="prop.status === 'new'" class="ValueData new"> Новое свойство </span>
                 <span v-if="prop.status === 'error'" class="ValueData error">
                   <StatusIcon class="StatusIcon" :status="'error'" />
                   Ошибка
@@ -305,6 +303,11 @@ export default {
       this.propertyList = {};
       const { primitiveTag = {}, ports = [] } = event;
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitiveTag;
+
+      if (this.primitiveID !== primitiveID) {
+        this.closePropSettings();
+        this.closePropFullValue();
+      }
 
       for (const prop in properties) {
         if (properties.hasOwnProperty(prop)) {
@@ -542,7 +545,8 @@ export default {
               overflow: hidden;
               white-space: nowrap;
 
-              &.new, &.error {
+              &.new,
+              &.error {
                 font-size: 15px;
                 font-weight: 700;
               }
