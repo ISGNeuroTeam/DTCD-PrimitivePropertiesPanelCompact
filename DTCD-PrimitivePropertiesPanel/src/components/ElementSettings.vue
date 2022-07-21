@@ -18,7 +18,7 @@
             :value="propType"
             class="FormField"
             label="Тип запроса"
-            @input="propType = $event.target.value"
+            @input="changePropType($event)"
           >
             <div
               v-for="type in propertyTypes"
@@ -38,6 +38,7 @@
             :value="component"
             class="FormField"
             label="Тип поля ввода"
+            @input="changeInputType($event)"
           >
             <div
               v-for="type in inputTypes"
@@ -50,7 +51,7 @@
         </div>
       </div>
 
-      <div v-if="propType === 'expression'" class="BodyRow">
+      <div v-show="propType === 'expression'" class="BodyRow">
         <div ref="inputElement" class="RowItem"></div>
       </div>
 
@@ -202,10 +203,7 @@ export default {
         this.paramsOTL.cache_ttl = cache_ttl;
       }
     }
-    await this.renderElement();
-    this.$refs['inputTypeSelector'].addEventListener('input', e => {
-      this.changeInputType(e);
-    });
+    if (this.propType === 'expression') await this.renderElement();
   },
   methods: {
     close() {
@@ -257,6 +255,14 @@ export default {
       this.close();
     },
 
+    changePropType(event) {
+      this.propType = event.target.value;
+      if (this.propType === 'expression') {
+        this.$nextTick(() => {
+          this.renderElement();
+        });
+      }
+    },
     changeInputType(event) {
       this.component = event.target.value;
       this.renderElement();
