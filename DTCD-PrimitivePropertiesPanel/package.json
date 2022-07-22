@@ -1,6 +1,6 @@
 {
   "name": "primitive-properties-panel",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "main": "Plugin.js",
   "scripts": {
     "test": "jest",
