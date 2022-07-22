@@ -141,7 +141,7 @@ export default {
       datasourceSystem: $root.dataSourceSystem,
       propType: 'expression',
       expression: '',
-      component: 'textarea',
+      component: '',
       componentValues: [],
       inputDataType: 'const',
       inputDataTypes: ['const', 'datasource'],
