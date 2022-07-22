@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - support of multiple value inputs
 
+### Fixed
+
+- selected primitive props not opening while editing any prop
+
 ## [0.4.0]
 
 ### Changed

@@ -304,6 +304,11 @@ export default {
       const { primitiveTag = {}, ports = [] } = event;
       const { primitiveID = '', nodeTitle = '', properties = {} } = primitiveTag;
 
+      if (this.primitiveID !== primitiveID) {
+        this.closePropSettings();
+        this.closePropFullValue();
+      }
+
       this.portList = ports;
       this.primitiveID = primitiveID;
       this.nodeTitle = nodeTitle;
