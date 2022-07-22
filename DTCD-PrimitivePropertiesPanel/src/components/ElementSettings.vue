@@ -381,6 +381,7 @@ export default {
           break;
 
         case 'switch':
+          this.element.setAttribute('label', 'Значение');
           this.element.value = this.expression === 'true' ? true : false;
           this.element.addEventListener('change', e => {
             this.expression = `${e.target.value}`;
