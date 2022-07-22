@@ -1,7 +1,9 @@
 <template functional>
-  <div class="no-primitive-selected">
-    <span>No primitive selected</span>
-    <i class="fas fa-project-diagram icon"/>
+  <div class="NoPrimitiveSelected">
+    <span class="FontIcon name_tableAdd Icon"></span>
+    <slot>
+      Выберите примитив для отображения
+    </slot>
   </div>
 </template>
 
@@ -12,19 +14,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.no-primitive-selected {
+.NoPrimitiveSelected {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
   height: 100%;
-  font-size: 18px;
-  font-weight: 300;
+  font-size: 17px;
+  padding: 20px 10px;
+  color: var(--text_secondary);
+  user-select: none;
 
-  .icon {
-    color: #959595;
-    font-size: 25px;
-    margin-top: 15px;
+  .Icon {
+    margin-bottom: 8px;
+    width: 150px;
+    height: 150px;
+    font-size: 150px;
+    color: var(--border_secondary);
   }
 }
 </style>

@@ -1,613 +1,580 @@
 <template>
-  <transition name="fade" mode="out-in">
-    <NoPrimitiveSelected v-if="!primitiveID" />
-    <div v-else class="panel-content">
-      <OTLModalWindow
-        v-if="isModalVisible"
-        @close="closeModal"
-        @savedOTL="handleOTL"
-        :otlData="tempValue"
-      />
-      <div class="panel-header">
-        <div class="primitive-info">
-          <input readonly type="text" tabindex="-1" class="node-id" :value="primitiveID" />
+  <div class="PrimitivePropertiesPanel">
+    <ElementSettings
+      v-if="isPropSettingsVisible"
+      :propData="editedPropData"
+      @close="closePropSettings"
+      @save="updateProp"
+      @delete="deleteProp"
+    />
+
+    <FullValueView
+      v-if="isFullValueVisible"
+      :valueData="fullValueData"
+      @close="closePropFullValue"
+    />
+
+    <div class="PanelHeader">
+      <div class="PrimitiveTitle">
+        <base-heading theme="theme_subheaderSmall">
           <input
+            class="NodeId"
             readonly
             type="text"
             tabindex="-1"
-            class="node-title"
-            :value="nodeTitle.replace(/(<([^>]+)>)/gi, '')"
+            placeholder="PrimitivePropertiesPanel"
+            :value="primitiveID"
           />
-        </div>
-      </div>
-      <div class="properties-container">
-        <div class="property-list" ref="propertyList">
-          <div class="prop-header">
-            <div>
-              <p>{{ primitiveID }} properties:</p>
-            </div>
-            <div class="btn add-prop-btn" title="Add property" @click="addNewPropertyForm">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M13 13V19H11V13H5V11H11V5H13V11H19V13H13Z" />
-              </svg>
-            </div>
-          </div>
-          <div v-for="(prop, propName) in propertyList" :key="propName" class="property-card">
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <!-- For scroll property name -->
-                  <input readonly tabindex="-1" type="text" :value="propName" />
-                </div>
-                <div class="prop-value">
-                  <span v-if="prop.status === 'complete'" v-text="prop.value" />
-                  <span v-else>
-                    <StatusIcon v-if="prop.status === 'error'" :status="'error'" />
-                    <StatusIcon v-if="prop.status === 'inProgress'" :status="'inProgress'" />
-                  </span>
-                </div>
-              </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deleteProperty(propName)"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path
-                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="card-content">
-              <select class="prop-type" v-model="prop.type">
-                <option
-                  v-for="option in propertyTypes"
-                  :value="
-                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
-                  "
-                  :key="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <button
-                v-if="prop.type === 'datasource'"
-                type="button"
-                class="otl-button"
-                @click="showModal(prop)"
-              >
-                Edit {{ prop.expression.type }}
-              </button>
-              <textarea
-                v-else
-                v-model="prop.expression"
-                rows="1"
-                class="prop-expression"
-                placeholder="Enter expression"
-              />
-            </div>
-          </div>
-
-          <div
-            v-for="(prop, propName) in addedPropertiesList"
-            :key="propName"
-            class="property-card"
-          >
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <input
-                    v-model="addedPropertiesList[propName].name"
-                    :ref="propName"
-                    class="editable"
-                    type="text"
-                    placeholder="Enter name..."
-                  />
-                </div>
-                <div class="prop-value">
-                  <div
-                    class="btn confirm-add-prop-btn"
-                    :class="{ disabled: addedPropertiesList[propName].name.length <= 0 }"
-                    title="Add property"
-                    @click="addPropertyToPrimitive(propName)"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24">
-                      <path
-                        d="M20.8388 6.69461L8.81799 18.7154L3.16113 13.0586L4.57113 11.6486L8.81799 15.8854L19.4288 5.28461L20.8388 6.69461Z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="btn delete-prop-btn"
-                title="Delete property"
-                @click="deleteAddedProperty(propName)"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path
-                    d="M17 22H7C5.89543 22 5 21.1046 5 20V7H3V5H7V4C7 2.89543 7.89543 2 9 2H15C16.1046 2 17 2.89543 17 4V5H21V7H19V20C19 21.1046 18.1046 22 17 22ZM7 7V20H17V7H7ZM9 4V5H15V4H9ZM15 18H13V9H15V18ZM11 18H9V9H11V18Z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="card-content">
-              <select class="prop-type" v-model="addedPropertiesList[propName].type">
-                <option
-                  v-for="option in propertyTypes"
-                  :key="option"
-                  :value="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <textarea
-                class="prop-expression"
-                placeholder="Enter expression"
-                rows="1"
-                v-model="addedPropertiesList[propName].expression"
-              />
-            </div>
-          </div>
-          <div v-for="port in portList" :key="port" class="property-card">
-            <div class="card-header">
-              <div class="prop-info">
-                <div class="prop-name">
-                  <input readonly tabindex="-1" type="text" :value="port.primitiveName" />
-                </div>
-                <div class="prop-value">
-                  <span
-                    v-if="port.properties.status.status === 'complete'"
-                    v-text="port.properties.status.value"
-                  />
-                  <span v-else>
-                    <StatusIcon
-                      v-if="port.properties.status.status === 'error'"
-                      :status="'error'"
-                    />
-                    <StatusIcon
-                      v-if="port.properties.status.status === 'inProgress'"
-                      :status="'inProgress'"
-                    />
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="card-content">
-              <!-- <label>{{ port.primitiveName }}</label> -->
-              <select class="prop-type" v-model="port.properties.status.type">
-                <option
-                  v-for="option in propertyTypes"
-                  :value="
-                    $root.dataSourceSystem.dataSourceTypes.includes(option) ? 'datasource' : option
-                  "
-                  :key="option"
-                  v-text="option.toUpperCase()"
-                />
-              </select>
-              <button
-                v-if="port.properties.status.type === 'datasource'"
-                type="button"
-                class="otl-button"
-                @click="showModal(port.properties.status)"
-              >
-                Edit OTL
-              </button>
-              <textarea
-                v-else
-                v-model="port.properties.status.expression"
-                rows="1"
-                class="prop-expression"
-                placeholder="Enter expression"
-              />
-            </div>
-          </div>
-        </div>
+        </base-heading>
+        <input
+          v-if="primitiveID"
+          class="NodeTitle"
+          readonly
+          type="text"
+          tabindex="-1"
+          :value="nodeTitle.replace(/(<([^>]+)>)/gi, '')"
+        />
       </div>
     </div>
-  </transition>
+
+    <NoPrimitiveSelected v-if="!primitiveID" />
+
+    <template v-else>
+      <base-tabs class="TabContainer" @select="tabSelectHandler">
+        <div slot="tab" tab-name="Свойства"></div>
+        <div slot="tab" tab-name="Порты"></div>
+      </base-tabs>
+
+      <base-expander v-show="selectedTab === 0" open="true" class="Expander">
+        <div slot="summary" class="ExpanderTitle">Создать новое свойство</div>
+        <base-input
+          ref="propName"
+          :value="addedPropName"
+          :disabled="!primitiveID"
+          class="Input"
+          label="Название"
+          placeholder="Название свойства"
+          @input="addedPropName = $event.target.value"
+        />
+        <base-button
+          size="big"
+          width="full"
+          :disabled="primitiveID && !isAddPropButtonDisabled"
+          @click="addPropertyToPrimitive"
+        >
+          Добавить свойство
+        </base-button>
+      </base-expander>
+
+      <!-- NOT USED NOW -->
+      <base-expander v-show="false" open="true" class="Expander">
+        <div slot="summary" class="ExpanderTitle">Создать новый порт</div>
+        <base-select
+          ref="portType"
+          class="Input PortTypeSelect"
+          label="Тип порта"
+          placeholder="Тип порта"
+          @input="addedPortType = $event.target.value"
+        >
+          <div v-for="type in portTypes" :key="type" :value="type" slot="item" v-text="type" />
+        </base-select>
+        <base-button disabled size="big" width="full">Добавить порт</base-button>
+      </base-expander>
+
+      <div class="SelectedPrimitiveData" key="SelectedPrimitiveData">
+        <div class="SectionSearch">
+          <h2 class="SectionSearchTitle" v-text="selectedTab === 0 ? 'Свойства' : 'Порты'" />
+          <base-input
+            type="search"
+            placeholder="Поиск"
+            size="small"
+            @input="searchString = $event.target.value"
+          >
+            <span slot="icon-left" class="FontIcon name_searchSmall size_md Icon"></span>
+          </base-input>
+        </div>
+
+        <div v-if="selectedTab === 0" class="PropertyList">
+          <div
+            v-for="(prop, propName) in propertyList"
+            :key="propName + prop.status"
+            class="PropertyCard"
+            v-show="propName.toLowerCase().includes(searchString.toLowerCase())"
+          >
+            <div class="PropertyDataWrapper">
+              <div>
+                <input class="PropertyName" readonly tabindex="-1" type="text" :value="propName" />
+                <span class="PropertyType" v-text="getPropType(prop, 'property')" />
+              </div>
+              <div class="PropertyValue">
+                <span class="ValueText" :class="{ error: prop.status === 'error' }"> Value: </span>
+                <span v-if="prop.status === 'complete'" class="ValueData" v-text="prop.value" />
+                <span v-if="prop.status === 'new'" class="ValueData new"> Новое свойство </span>
+                <span v-if="prop.status === 'error'" class="ValueData error">
+                  <StatusIcon class="StatusIcon" :status="'error'" />
+                  Ошибка
+                </span>
+                <span v-if="prop.status === 'inProgress'" class="ValueData progress">
+                  <StatusIcon class="StatusIcon" :status="'inProgress'" />
+                  Загрузка данных
+                </span>
+              </div>
+            </div>
+            <div class="IconsWrapper">
+              <span
+                class="FontIcon name_show size_lg ShowIcon"
+                @click="openPropFullValue(propName, prop.value)"
+              />
+              <span class="FontIcon name_edit size_lg" @click="openPropSettings(propName, prop)" />
+            </div>
+          </div>
+        </div>
+
+        <div v-if="selectedTab === 1" class="PropertyList">
+          <div
+            v-for="port in portList"
+            :key="port"
+            class="PropertyCard"
+            v-show="port.primitiveName.toLowerCase().includes(searchString.toLowerCase())"
+          >
+            <div class="PropertyDataWrapper">
+              <div>
+                <input
+                  class="PropertyName"
+                  readonly
+                  tabindex="-1"
+                  type="text"
+                  :value="port.primitiveName"
+                />
+                <span class="PropertyType" v-text="getPropType(port, 'port')" />
+              </div>
+              <div class="PropertyValue">
+                <span
+                  class="ValueText"
+                  :class="{ error: port.properties.status.status === 'error' }"
+                >
+                  Value:
+                </span>
+                <span
+                  v-if="port.properties.status.status === 'complete'"
+                  class="ValueData"
+                  v-text="port.properties.status.value"
+                />
+                <span v-if="port.properties.status.status === 'error'" class="ValueData error">
+                  <StatusIcon class="StatusIcon" :status="'error'" />
+                  Ошибка
+                </span>
+                <span
+                  v-if="port.properties.status.status === 'inProgress'"
+                  class="ValueData progress"
+                >
+                  <StatusIcon class="StatusIcon" :status="'inProgress'" />
+                  Загрузка данных
+                </span>
+              </div>
+            </div>
+            <div class="IconsWrapper">
+              <span
+                class="FontIcon name_show size_lg ShowIcon"
+                @click="openPropFullValue(port.primitiveName, port.properties.status.value)"
+              />
+              <span
+                class="FontIcon name_edit size_lg"
+                @click="openPropSettings(port.primitiveName, port.properties.status, 'port')"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script>
 import NoPrimitiveSelected from '@/components//NoPrimitiveSelected';
 import StatusIcon from '@/components/StatusIcon';
-import OTLModalWindow from '@/components/OTLModalWindow';
+import FullValueView from '@/components/FullValueView';
+import ElementSettings from '@/components/ElementSettings';
 
 export default {
   name: 'PrimitivePropertiesPanel',
-  components: { NoPrimitiveSelected, StatusIcon, OTLModalWindow },
+  components: {
+    NoPrimitiveSelected,
+    StatusIcon,
+    FullValueView,
+    ElementSettings,
+  },
   data: ({ $root }) => ({
-    guid: $root.guid,
     logSystem: $root.logSystem,
-    eventSystem: $root.eventSystem,
     primitiveID: '',
     nodeTitle: '',
     propertyList: {},
-    propertyStatusList: {},
-    propertyTypes: ['expression', 'OTL'],
-    newPropsCount: 1,
-    addedPropertiesList: {},
-    addedPortPropertiesList: {},
     portList: [],
-    isModalVisible: false,
-    tempValue: {},
-    editableOTL: null,
-    primitiveProperties: {},
+    isFullValueVisible: false,
+    isPropSettingsVisible: false,
+    selectedTab: 0,
+    searchString: '',
+    addedPropName: '',
+    addedPortType: '',
+    fullValueData: { prop: '', value: '' },
+    editedPropData: { type: '', elem: null },
+    portTypes: ['InPort', 'OutPort', 'InOutPort'],
   }),
+  computed: {
+    expanderTitle() {
+      const titles = ['новое свойство', 'новый порт'];
+      return `Создать ${titles[this.selectedTab]}`;
+    },
+
+    isAddPropButtonDisabled() {
+      const { isValid } = this.validateAddedPropName(this.addedPropName);
+      return this.addedPropName.length < 1 ? false : isValid;
+    },
+
+    existedProps() {
+      return Object.keys(this.propertyList);
+    },
+  },
+  watch: {
+    primitiveID() {
+      this.$nextTick(() => {
+        const { propName } = this.$refs;
+        if (typeof propName.validation !== 'function') {
+          propName.validation = v => this.validateAddedPropName(v);
+        }
+      });
+    },
+  },
   methods: {
-    showModal(prop) {
-      if (typeof prop.expression !== 'string') {
-        this.tempValue = prop.expression;
-      } else {
-        const defaultTimestamp = Math.floor(+new Date() / 1000);
-        this.tempValue = {
-          original_otl: '',
-          tws: defaultTimestamp,
-          twf: defaultTimestamp,
-          cache_ttl: 60,
-        };
+    tabSelectHandler(event) {
+      const { propName, portType } = this.$refs;
+      const { tabIndex } = event.target.activeTab;
+      propName.value = '';
+      portType.value = 'InPort';
+      this.selectedTab = tabIndex;
+    },
+
+    getPropType(prop, type = 'property') {
+      const obj = type === 'port' ? prop.properties.status : prop;
+      return obj.type === 'datasource' ? obj.expression.type : obj.type;
+    },
+
+    openPropSettings(propName = '', data = {}, propType = 'property') {
+      this.editedPropData = { propName, propType, data };
+      this.isPropSettingsVisible = true;
+    },
+
+    openPropFullValue(prop = '', val = '') {
+      let value = val;
+
+      if (typeof val !== 'string') {
+        value = JSON.stringify(val, null, 2);
       }
-      this.editableOTL = prop;
-      this.isModalVisible = true;
+
+      this.fullValueData = { prop, value };
+      this.isFullValueVisible = true;
     },
-    closeModal() {
-      this.isModalVisible = false;
+
+    closePropSettings() {
+      this.isPropSettingsVisible = false;
     },
+
+    closePropFullValue() {
+      this.isFullValueVisible = false;
+    },
+
+    validateAddedPropName(val) {
+      const propNameRegexp = /^[_a-zA-Z]\w*$/;
+
+      if (val.length < 1) {
+        return { isValid: true };
+      } else if (!propNameRegexp.test(val)) {
+        return { isValid: false, message: 'Некорректное название свойства' };
+      } else if (this.existedProps.includes(val)) {
+        return { isValid: false, message: 'Свойство с таким названием уже существует' };
+      }
+
+      return { isValid: true };
+    },
+
     processPrimitiveEvent(event = {}) {
-      this.logSystem.debug(`Start propcessing event BroadcastPrimitiveInfo`);
-      let { primitiveTag: primitive = {}, ports } = event;
-      this.portList = ports;
-      this.primitivePorts = ports;
+      this.logSystem.debug(`Start propcessing BroadcastPrimitiveInfo event`);
 
-      const { primitiveID = '', nodeTitle = '', properties = {} } = primitive;
+      this.propertyList = {};
+      const { primitiveTag = {}, ports = [] } = event;
+      const { primitiveID = '', nodeTitle = '', properties = {} } = primitiveTag;
 
-      for (let prop in properties) {
-        if (!properties[prop].type) properties[prop].type = 'expression';
-        if (!properties[prop].expression) properties[prop].expression = '';
+      if (this.primitiveID !== primitiveID) {
+        this.closePropSettings();
+        this.closePropFullValue();
       }
-      this.primitiveProperties = properties;
+
+      this.portList = ports;
       this.primitiveID = primitiveID;
       this.nodeTitle = nodeTitle;
       this.propertyList = properties;
-      this.newPropsCount = 1;
-      this.addedPropertiesList = {};
 
-      this.logSystem.debug(`End of propcessing event BroadcastPrimitiveInfo`);
+      this.logSystem.debug(`End of propcessing BroadcastPrimitiveInfo event`);
     },
 
-    processLivedashPrimitiveDeleteEvent(eventData) {
-      const { text, tag } = eventData;
-      // Check if label by nextline
-      if (text) this.nodeTitle = '';
+    deleteProp(propData = {}) {
+      const { propName, propType } = propData;
 
-      if (tag && tag.primitiveID === this.primitiveID) {
-        this.primitiveID = '';
-        this.nodeTitle = '';
-        this.newPropsCount = 1;
-        this.propertyList = {};
-        this.addedPropertiesList = {};
-      }
-    },
+      if (propType !== 'property') return;
 
-    deleteProperty(propName) {
       this.$delete(this.propertyList, propName);
-      this.$delete(this.primitiveProperties, propName);
-      this.logSystem.debug(`Deleting property ${propName} from ${this.primitiveID} node`);
-      this.logSystem.info(`Deleting property ${propName} from ${this.primitiveID} node`);
+      this.logSystem.debug(`Deleting "${propName}" property from the ${this.primitiveID} node`);
+      this.logSystem.info(`Deleting "${propName}" property from the ${this.primitiveID} node`);
     },
 
-    deleteAddedProperty(propName) {
-      this.$delete(this.addedPropertiesList, propName);
-      this.logSystem.debug(`Сancel adding a new property to ${this.primitiveID} node`);
-      this.logSystem.info(`Сancel adding a new property to ${this.primitiveID} node`);
-    },
-
-    deletePort(port) {
-      console.log(port);
-    },
-    deletePortProperty(port, propName) {
-      this.$delete(port.properties, propName);
-    },
-    deleteAddedPortProperty(port, index) {
-      this.addedPortPropertiesList[port.primitiveID].splice(index, 1);
-    },
-    addNewPortPropertyForm(port) {
-      const property = {
-        name: '',
-        value: '',
-        type: 'expression',
-        status: '',
-        expression: '',
-      };
-      if (!this.addedPortPropertiesList[port.primitiveID]) {
-        this.$set(this.addedPortPropertiesList, port.primitiveID, [property]);
-      } else this.addedPortPropertiesList[port.primitiveID].push(property);
-    },
-    async addPortPropertyToPrimitive(prop, port) {
-      const { name, type, status, value, expression } = prop;
-      const existedProperties = Object.keys(port.properties).map(key => key.toLocaleLowerCase());
-
-      if (!existedProperties.includes(name.toLocaleLowerCase())) {
-        await this.$set(port.properties, name, { value, type, status, expression });
-        this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
-        this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
-
-        const index = this.addedPortPropertiesList[port.primitiveID].indexOf(prop);
-        this.addedPortPropertiesList[port.primitiveID].splice(index, 1);
+    addPropertyToPrimitive() {
+      const name = this.addedPropName;
+      this.addedPropName = '';
+      if (!this.existedProps.includes(name)) {
+        this.$set(this.propertyList, name, {
+          type: 'expression',
+          expression: '',
+          status: 'new',
+          value: '',
+        });
+        this.logSystem.debug(`Adding "${name}" property to the ${this.primitiveID} node`);
+        this.logSystem.info(`Adding "${name}" property to the ${this.primitiveID} node`);
       }
     },
 
-    addNewPropertyForm() {
-      const propName = `prop${this.newPropsCount}`;
-      const property = {
-        name: '',
-        value: '',
-        type: 'expression',
-        status: '',
-        expression: '',
-      };
-      this.$set(this.addedPropertiesList, propName, property);
-      // this.$nextTick(() => this.$refs[propName][0].focus());
-      // this.scrollPropertyListDown();
-      this.newPropsCount += 1;
-    },
+    updateProp(propData) {
+      const { propName, propType, data } = propData;
+      const { type, expression, input } = data;
 
-    async addPropertyToPrimitive(propName) {
-      const { name, type, status, value, expression } = this.addedPropertiesList[propName];
-      const existedProperties = Object.keys(this.propertyList).map(key => key.toLocaleLowerCase());
-
-      if (!existedProperties.includes(name.toLocaleLowerCase())) {
-        await this.$set(this.propertyList, name, { value, type, status, expression });
-        await this.$set(this.primitiveProperties, name, { value, type, status, expression });
-        this.logSystem.debug(`Adding property ${name} from ${this.primitiveID} node`);
-        this.logSystem.info(`Adding property ${name} from ${this.primitiveID} node`);
-
-        await this.$delete(this.addedPropertiesList, propName);
+      if (propType === 'property') {
+        this.$set(this.propertyList[propName], 'type', type);
+        this.$set(this.propertyList[propName], 'expression', expression);
+        this.$set(this.propertyList[propName], 'input', input);
+        this.logSystem.debug(`Updating "${propName}" property of the ${this.primitiveID} node`);
+        this.logSystem.info(`Updating "${propName}" property of the ${this.primitiveID} node`);
       }
-    },
 
-    scrollPropertyListDown() {
-      this.$nextTick(() => {
-        const container = this.$refs.propertyList;
-        container.scrollTop = container.scrollHeight;
-        this.logSystem.debug(`Scrolling properties container down`);
-      });
-    },
-    handleOTL(otlRequestData) {
-      this.editableOTL.expression = otlRequestData;
-      this.editableOTL = null;
+      if (propType === 'port') {
+        const port = this.portList.find(p => p.primitiveName === propName);
+        const { properties } = this.portList[this.portList.indexOf(port)];
+        this.$set(properties, 'status', { type, expression, input });
+        this.logSystem.debug(`Updating "${propName}" port of the ${this.primitiveID} node`);
+        this.logSystem.info(`Updating "${propName}" port of the ${this.primitiveID} node`);
+      }
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-@import './../styles/base.scss';
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Proxima Nova';
+}
 
-$panel-header-height: 60px;
-$c-blue: #2196f3;
-$c-red: #ef5350;
-$c-green: #4caf50;
-
-.panel-content {
+.PrimitivePropertiesPanel {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  position: relative;
+  color: var(--text_main);
+  background-color: var(--background_main);
 
-  .btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 35px;
-    height: 35px;
-    border: thin solid #757575;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: $transition-time;
+  .PanelHeader {
+    background-color: var(--background_main);
+    border-bottom: 1px solid var(--background_secondary);
+    padding: 10px;
+    color: var(--title);
 
-    .icon {
-      color: #757575;
-      font-size: 15px;
-    }
-
-    &.add-prop-btn {
-      border-color: $c-blue;
-
-      path {
-        fill: $c-blue;
-      }
-
-      &:hover {
-        background-color: $c-blue;
-
-        svg {
-          transform: rotate(180deg);
-        }
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.delete-prop-btn {
-      flex-shrink: 0;
-      border-color: $c-red;
-
-      path {
-        fill: $c-red;
-      }
-
-      &:hover {
-        background-color: $c-red;
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.confirm-add-prop-btn {
-      border-color: $c-green;
-
-      path {
-        fill: $c-green;
-      }
-
-      &:hover {
-        background-color: $c-green;
-
-        path {
-          fill: #fff;
-        }
-      }
-    }
-
-    &.disabled {
-      pointer-events: none;
-      border-color: #959595;
-
-      path {
-        fill: #959595;
-      }
-    }
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: $panel-header-height;
-    background-color: #fff;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.25);
-    padding: 0 20px;
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    .primitive-info {
+    .PrimitiveTitle {
       display: flex;
       flex-direction: column;
       flex: 1 0;
+    }
 
-      > input {
-        border: none;
-        outline: none;
-        padding-right: 20px;
-      }
+    .NodeId {
+      width: 100%;
+      padding-bottom: 4px;
+      padding-right: 20px;
 
-      .node-id {
-        font-size: 15px;
-        font-family: monospace;
+      &::-webkit-input-placeholder {
+        color: var(--title);
       }
+    }
 
-      .node-title {
-        color: #656565;
-        font-size: 12px;
-        margin-top: 5px;
+    .NodeTitle {
+      font-size: 17px;
+      padding-right: 20px;
+      color: var(--title);
+
+      &::-webkit-input-placeholder {
+        color: var(--title);
       }
+    }
+
+    .NodeId,
+    .NodeTitle {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      border: none;
+      outline: none;
+      background-color: var(--background_main);
     }
   }
 
-  .properties-container {
-    margin-top: 60px;
-    overflow-y: scroll;
+  .TabContainer {
+    padding: 10px 10px 0;
   }
-  .property-list {
-    padding-bottom: 20px;
 
-    .prop-header {
+  .Expander {
+    padding: 10px 14px 30px;
+    border-bottom: 1px solid var(--border_secondary);
+  }
+
+  .ExpanderTitle {
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .Input {
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    &.PortTypeSelect > [slot='item'] {
+      padding: 6px 12px;
+    }
+  }
+
+  .SelectedPrimitiveData {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+
+    .SectionSearch {
       display: flex;
       justify-content: space-between;
+      padding: 12px 22px;
       align-items: center;
-      padding: 10px 20px;
+      border-bottom: 1px solid var(--border_secondary);
+
+      .SectionSearchTitle {
+        font-size: 17px;
+      }
+
+      .Icon {
+        color: var(--text_secondary);
+      }
     }
 
-    .section-title {
-      margin-top: 10px;
-      margin-left: 10px;
-    }
+    .PropertyList {
+      padding: 10px;
+      overflow: auto;
 
-    .property-card {
-      display: flex;
-      flex-direction: column;
-      padding: 7px 20px;
-
-      .card-header {
+      .PropertyCard {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        padding: 12px;
+        border-bottom: 2px solid var(--border_secondary);
 
-        .prop-info {
+        &:hover .IconsWrapper .FontIcon.ShowIcon {
+          display: block;
+        }
+
+        .PropertyDataWrapper {
           display: flex;
-          flex: 1 0;
+          overflow: hidden;
+          margin-right: 20px;
+          flex-grow: 1;
 
-          .prop-name {
+          .PropertyName {
+            display: block;
+            cursor: default;
+            font-size: 17px;
+            font-weight: 700;
+            max-width: 80px;
+            padding-right: 15px;
+            border: none;
+            outline: none;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            color: var(--text_main);
+            background-color: var(--background_main);
+          }
+
+          .PropertyType {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text_secondary);
+            text-transform: capitalize;
+            margin-top: 2px;
+            user-select: none;
+          }
+
+          .PropertyValue {
             display: flex;
-            flex: 1 0;
+            align-items: center;
+            color: var(--text_secondary);
+            font-size: 17px;
 
-            > input {
-              display: block;
-              width: 100%;
-              cursor: default;
-              font-size: 15px;
-              font-family: monospace;
-              border: none;
-              outline: none;
+            .ValueText {
+              padding-right: 8px;
+              user-select: none;
 
-              &.editable {
-                cursor: text;
+              &.error {
+                color: var(--danger);
+              }
+            }
+
+            .ValueData {
+              display: flex;
+              align-items: center;
+              color: var(--text_main);
+              text-overflow: ellipsis;
+              overflow: hidden;
+              white-space: nowrap;
+
+              &.new,
+              &.error {
+                font-size: 15px;
+                font-weight: 700;
+              }
+
+              &.new {
+                color: var(--success);
+              }
+
+              &.error {
+                color: var(--danger);
+              }
+
+              &.progress {
+                color: var(--border);
+              }
+
+              .StatusIcon {
+                margin-right: 6px;
               }
             }
           }
+        }
 
-          .prop-value {
-            max-width: 70%;
-            font-size: 15px;
-            padding: 0 20px;
-            margin-left: auto;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 5; /* number of lines to show */
-            line-clamp: 5;
-            -webkit-box-orient: vertical;
+        .IconsWrapper {
+          display: flex;
+          align-items: center;
+
+          .FontIcon {
+            cursor: pointer;
+
+            &.ShowIcon {
+              display: none;
+              margin-right: 20px;
+            }
           }
-        }
-      }
-
-      .card-content {
-        display: flex;
-        align-items: start;
-        margin-top: 15px;
-
-        $select-height: 20px;
-
-        .prop-type {
-          display: block;
-          height: $select-height;
-          outline: none;
-        }
-        .otl-button {
-          min-width: 100px;
-          margin-left: 20px;
-        }
-
-        .prop-expression {
-          flex: 1 0;
-          font-family: monospace;
-          min-height: $select-height;
-          max-height: 100px;
-          margin-left: 20px;
-          outline: none;
-          resize: vertical;
         }
       }
     }
