@@ -203,7 +203,6 @@ export default {
         this.paramsOTL.cache_ttl = cache_ttl;
       }
     }
-    if (this.propType === 'expression') await this.renderElement();
   },
   methods: {
     close() {
@@ -276,6 +275,7 @@ export default {
     },
 
     async renderElement() {
+      this.datasourceError = false;
       this.$refs['inputElement'].innerHTML = '';
 
       this.element = document.createElement(`base-${this.component}`);
@@ -363,13 +363,13 @@ export default {
                 try {
                   this.loaderVisible = true;
                   await this._runDatasource();
+                  this._fillColumns();
                 } catch (err) {
                   this.datasourceError = true;
                 } finally {
                   this.loaderVisible = false;
                 }
-              }
-              this._fillColumns();
+              } else this._fillColumns();
             }
           }
 
