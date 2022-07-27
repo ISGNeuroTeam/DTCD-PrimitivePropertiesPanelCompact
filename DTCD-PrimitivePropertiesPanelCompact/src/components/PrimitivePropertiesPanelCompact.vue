@@ -1,5 +1,5 @@
 <template>
-  <div class="PrimitivePropertiesPanel">
+  <div class="PrimitivePropertiesPanelCompact">
     <ElementSettings
       v-if="isPropSettingsVisible"
       :propData="editedPropData"
@@ -22,7 +22,7 @@
             readonly
             type="text"
             tabindex="-1"
-            placeholder="PrimitivePropertiesPanel"
+            placeholder="PrimitivePropertiesPanelCompact"
             :value="primitiveID"
           />
         </base-heading>
@@ -197,7 +197,7 @@ import FullValueView from '@/components/FullValueView';
 import ElementSettings from '@/components/ElementSettings';
 
 export default {
-  name: 'PrimitivePropertiesPanel',
+  name: 'PrimitivePropertiesPanelCompact',
   components: {
     NoPrimitiveSelected,
     StatusIcon,
@@ -374,7 +374,7 @@ export default {
   font-family: 'Proxima Nova';
 }
 
-.PrimitivePropertiesPanel {
+.PrimitivePropertiesPanelCompact {
   display: flex;
   flex-direction: column;
   height: 100%;

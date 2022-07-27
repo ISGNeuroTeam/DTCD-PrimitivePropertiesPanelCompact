@@ -1,12 +1,12 @@
 <template>
-  <PrimitivePropertiesPanel />
+  <PrimitivePropertiesPanelCompact />
 </template>
 
 <script>
-import PrimitivePropertiesPanel from '@/components/PrimitivePropertiesPanel';
+import PrimitivePropertiesPanelCompact from '@/components/PrimitivePropertiesPanelCompact';
 
 export default {
   name: 'PluginComponent',
-  components: { PrimitivePropertiesPanel },
+  components: { PrimitivePropertiesPanelCompact },
 };
 </script>
