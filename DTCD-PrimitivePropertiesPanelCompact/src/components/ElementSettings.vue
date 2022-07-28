@@ -7,7 +7,7 @@
     </header>
 
     <div class="SectionButtonBack" @click="close">
-      <span class="FontIcon name_chevronBigDown rotate_90 size_lg"></span>
+      <span class="FontIcon name_chevronBigDown rotate_90 size_md"></span>
       <span class="ButtonBackText">Назад</span>
     </div>
 
@@ -464,6 +464,7 @@ export default {
       width: 100%;
       padding-right: 20px;
       color: var(--title);
+      font-size: 18px;
       font-family: 'Proxima Nova';
       text-overflow: ellipsis;
       overflow: hidden;
@@ -477,7 +478,7 @@ export default {
   .SectionButtonBack {
     display: flex;
     align-items: center;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     padding: 10px;
     cursor: pointer;

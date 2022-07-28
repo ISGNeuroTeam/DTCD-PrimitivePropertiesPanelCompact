@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [UNRELEASED]
+
+Created a fork based on the [PrimitivePropertiesPanel](https://github.com/ISGNeuroTeam/DTCD-PrimitivePropertiesPanel) v0.5.1
+
+### Changed
+
+- more compact UI
+
 ## [0.5.1]
 
 ### Fixed

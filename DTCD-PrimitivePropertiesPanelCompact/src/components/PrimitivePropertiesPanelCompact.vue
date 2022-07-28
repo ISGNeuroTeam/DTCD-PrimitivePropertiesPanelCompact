@@ -47,23 +47,23 @@
 
       <base-expander v-show="selectedTab === 0" open="true" class="Expander">
         <div slot="summary" class="ExpanderTitle">Создать новое свойство</div>
-        <base-input
-          ref="propName"
-          :value="addedPropName"
-          :disabled="!primitiveID"
-          class="Input"
-          label="Название"
-          placeholder="Название свойства"
-          @input="addedPropName = $event.target.value"
-        />
-        <base-button
-          size="big"
-          width="full"
-          :disabled="primitiveID && !isAddPropButtonDisabled"
-          @click="addPropertyToPrimitive"
-        >
-          Добавить свойство
-        </base-button>
+        <div class="Content">
+          <base-input
+            ref="propName"
+            :value="addedPropName"
+            :disabled="!primitiveID"
+            class="Input"
+            placeholder="Название свойства"
+            @input="addedPropName = $event.target.value"
+          />
+          <base-button
+            class="AddPropBtn"
+            :disabled="primitiveID && !isAddPropButtonDisabled"
+            @click="addPropertyToPrimitive"
+          >
+            Добавить
+          </base-button>
+        </div>
       </base-expander>
 
       <!-- NOT USED NOW -->
@@ -122,10 +122,10 @@
             </div>
             <div class="IconsWrapper">
               <span
-                class="FontIcon name_show size_lg ShowIcon"
+                class="FontIcon name_show size_md ShowIcon"
                 @click="openPropFullValue(propName, prop.value)"
               />
-              <span class="FontIcon name_edit size_lg" @click="openPropSettings(propName, prop)" />
+              <span class="FontIcon name_edit size_md" @click="openPropSettings(propName, prop)" />
             </div>
           </div>
         </div>
@@ -175,11 +175,11 @@
             </div>
             <div class="IconsWrapper">
               <span
-                class="FontIcon name_show size_lg ShowIcon"
+                class="FontIcon name_show size_md ShowIcon"
                 @click="openPropFullValue(port.primitiveName, port.properties.status.value)"
               />
               <span
-                class="FontIcon name_edit size_lg"
+                class="FontIcon name_edit size_md"
                 @click="openPropSettings(port.primitiveName, port.properties.status, 'port')"
               />
             </div>
@@ -395,8 +395,8 @@ export default {
     }
 
     .NodeId {
+      font-size: 18px;
       width: 100%;
-      padding-bottom: 4px;
       padding-right: 20px;
 
       &::-webkit-input-placeholder {
@@ -405,7 +405,7 @@ export default {
     }
 
     .NodeTitle {
-      font-size: 17px;
+      font-size: 14px;
       padding-right: 20px;
       color: var(--title);
 
@@ -430,19 +430,29 @@ export default {
   }
 
   .Expander {
-    padding: 10px 14px 30px;
+    padding: 0 14px 10px;
     border-bottom: 1px solid var(--border_secondary);
-  }
 
-  .ExpanderTitle {
-    font-weight: 600;
-    font-size: 17px;
+    .ExpanderTitle {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .Content {
+      display: flex;
+      gap: 20px;
+
+      .Input {
+        flex-grow: 1;
+      }
+
+      .AddPropBtn {
+        align-self: flex-start;
+      }
+    }
   }
 
   .Input {
-    margin-top: 10px;
-    margin-bottom: 20px;
-
     &.PortTypeSelect > [slot='item'] {
       padding: 6px 12px;
     }
@@ -456,12 +466,13 @@ export default {
     .SectionSearch {
       display: flex;
       justify-content: space-between;
-      padding: 12px 22px;
+      padding: 6px 15px;
+      gap: 20px;
       align-items: center;
       border-bottom: 1px solid var(--border_secondary);
 
       .SectionSearchTitle {
-        font-size: 17px;
+        font-size: 16px;
       }
 
       .Icon {
@@ -470,14 +481,14 @@ export default {
     }
 
     .PropertyList {
-      padding: 10px;
+      padding: 0 10px;
       overflow: auto;
 
       .PropertyCard {
         display: flex;
         justify-content: space-between;
-        padding: 12px;
-        border-bottom: 2px solid var(--border_secondary);
+        padding: 6px 6px;
+        border-bottom: 1px solid var(--border_secondary);
 
         &:hover .IconsWrapper .FontIcon.ShowIcon {
           display: block;
@@ -486,15 +497,15 @@ export default {
         .PropertyDataWrapper {
           display: flex;
           overflow: hidden;
-          margin-right: 20px;
+          margin-right: 10px;
           flex-grow: 1;
 
           .PropertyName {
             display: block;
             cursor: default;
-            font-size: 17px;
+            font-size: 14px;
             font-weight: 700;
-            max-width: 80px;
+            max-width: 100px;
             padding-right: 15px;
             border: none;
             outline: none;
@@ -507,7 +518,7 @@ export default {
 
           .PropertyType {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--text_secondary);
             text-transform: capitalize;
@@ -519,7 +530,7 @@ export default {
             display: flex;
             align-items: center;
             color: var(--text_secondary);
-            font-size: 17px;
+            font-size: 14px;
 
             .ValueText {
               padding-right: 8px;
@@ -572,7 +583,7 @@ export default {
 
             &.ShowIcon {
               display: none;
-              margin-right: 20px;
+              margin-right: 10px;
             }
           }
         }
