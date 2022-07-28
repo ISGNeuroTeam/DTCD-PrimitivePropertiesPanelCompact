@@ -21,16 +21,16 @@ export default {
   align-items: center;
   text-align: center;
   height: 100%;
-  font-size: 17px;
+  font-size: 16px;
   padding: 20px 10px;
   color: var(--text_secondary);
   user-select: none;
 
   .Icon {
     margin-bottom: 8px;
-    width: 150px;
-    height: 150px;
-    font-size: 150px;
+    width: 120px;
+    height: 120px;
+    font-size: 120px;
     color: var(--border_secondary);
   }
 }

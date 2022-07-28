@@ -1,6 +1,7 @@
-# DTCD-PrimitivePropertiesPanel
+# DTCD-PrimitivePropertiesPanelCompact
 
-Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to manage the properties of primitives
+Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to manage the properties of primitives.
+This is a fork based on the [PrimitivePropertiesPanel](https://github.com/ISGNeuroTeam/DTCD-PrimitivePropertiesPanel) v0.5.1 plugin.
 
 ## Getting Started
 
@@ -41,7 +42,7 @@ make clean
 Use `make pack` to get a deployable tarball. Move it to plugins directory and unarchive it with the following commands:
 
 ```
-tar -zxf DTCD-PrimitivePropertiesPanel-*.tar.gz ./DTCD-PrimitivePropertiesPanel
+tar -zxf DTCD-PrimitivePropertiesPanelCompact-*.tar.gz ./DTCD-PrimitivePropertiesPanelCompact
 ```
 
 ## Built With
@@ -53,7 +54,7 @@ tar -zxf DTCD-PrimitivePropertiesPanel-*.tar.gz ./DTCD-PrimitivePropertiesPanel
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/ISGNeuroTeam/DTCD-PrimitivePropertiesPanel/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/ISGNeuroTeam/DTCD-PrimitivePropertiesPanelCompact/tags).
 
 Also you can see the [CHANGELOG](CHANGELOG.md) file.
 
