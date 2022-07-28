@@ -1,6 +1,7 @@
 # DTCD-PrimitivePropertiesPanelCompact
 
-Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to manage the properties of primitives
+Panel plugin for [DTCD](https://github.com/ISGNeuroTeam/DTCD) application designed to manage the properties of primitives.
+This is a fork based on the [PrimitivePropertiesPanel](https://github.com/ISGNeuroTeam/DTCD-PrimitivePropertiesPanel) v0.5.1 plugin.
 
 ## Getting Started
 
